@@ -17,11 +17,11 @@ export default function Footer() {
           {/* Company info */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-lg hero-gradient flex items-center justify-center">
-                <span className="text-white font-display font-bold text-lg">A</span>
+              <div className="w-12 h-12 bg-black border-2 border-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:shadow-red-500/40 hover:scale-105 hover:border-red-400">
+                <img src="/logo.png" alt="Aditri logo" className="w-9 h-9 object-contain" />
               </div>
               <div>
-                <p className="font-display font-bold text-white text-sm">Aditri Constructions</p>
+                <p className="font-display font-bold text-white text-sm">Aditri Constructions Services</p>
                 <p className="text-xs text-primary-400">Your Vision, Our Expertise</p>
               </div>
             </div>
@@ -108,3 +108,4 @@ export default function Footer() {
     </footer>
   );
 }
+

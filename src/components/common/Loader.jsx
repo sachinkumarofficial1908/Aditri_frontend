@@ -18,8 +18,8 @@ export default function Loader() {
             animate={{ rotate: 360 }}
             transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
           />
-          <div className="absolute inset-3 hero-gradient rounded-full flex items-center justify-center">
-            <span className="text-white font-display font-bold text-lg">A</span>
+          <div className="absolute inset-3 bg-black border-2 border-white rounded-full flex items-center justify-center shadow-lg">
+            <img src="/favicon.svg" alt="Aditri favicon" className="w-9 h-9 object-contain" />
           </div>
         </div>
         <p className="text-sm text-gray-500 font-medium animate-pulse">Loading...</p>
@@ -27,3 +27,4 @@ export default function Loader() {
     </div>
   );
 }
+

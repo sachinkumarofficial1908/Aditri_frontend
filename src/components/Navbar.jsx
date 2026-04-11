@@ -58,11 +58,15 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-lg hero-gradient flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-                <span className="text-white font-display font-bold text-lg">A</span>
+              <div className="w-12 h-12 bg-black border-2 border-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:shadow-red-500/40 hover:scale-105 hover:border-red-400">
+                <img
+                  src="/logo.png"
+                  alt="Aditri logo"
+                  className="w-9 h-9 object-contain"
+                />
               </div>
               <div className="hidden sm:block">
-                <p className="font-display font-bold text-gray-900 text-sm leading-tight">Aditri Constructions</p>
+                <p className="font-display font-bold text-gray-900 text-sm leading-tight">Aditri Constructions Services</p>
                 <p className="text-xs text-primary-600 font-medium">Your Vision, Our Expertise</p>
               </div>
             </Link>

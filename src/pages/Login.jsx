@@ -31,8 +31,8 @@ export function Login() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <div className="w-14 h-14 hero-gradient rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-white font-display font-bold text-2xl">A</span>
+          <div className="w-12 h-12 bg-black border-2 border-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg transition-all duration-300 hover:shadow-red-500/40 hover:scale-105 hover:border-red-400">
+            <img src="/logo.png" alt="Aditri logo" className="w-9 h-9 object-contain" />
           </div>
           <h1 className="text-3xl font-display font-bold text-gray-900">Welcome Back</h1>
           <p className="text-gray-600 mt-2">Sign in to your Aditri account</p>
@@ -115,8 +115,8 @@ export function Register() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-primary-50 flex items-center justify-center px-4 py-16">
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 hero-gradient rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-white font-display font-bold text-2xl">A</span>
+          <div className="w-12 h-12 bg-black border-2 border-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg transition-all duration-300 hover:shadow-red-500/40 hover:scale-105 hover:border-red-400">
+            <img src="/logo.png" alt="Aditri logo" className="w-9 h-9 object-contain" />
           </div>
           <h1 className="text-3xl font-display font-bold text-gray-900">Create Account</h1>
           <p className="text-gray-600 mt-2">Join Aditri Constructions Services</p>
@@ -180,3 +180,4 @@ export function Register() {
 }
 
 export default Login;
+

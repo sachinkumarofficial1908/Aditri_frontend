@@ -66,8 +66,8 @@ function AdminSidebar({ active, isMobileOpen = false, onClose = () => {} }) {
         <div className="p-5 border-b border-gray-800">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 hero-gradient rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="font-display font-bold text-sm">A</span>
+              <div className="w-12 h-12 bg-black border-2 border-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:shadow-red-500/40 hover:scale-105 hover:border-red-400 flex-shrink-0">
+                <img src="/logo.png" alt="Aditri logo" className="w-9 h-9 object-contain" />
               </div>
               <div className="min-w-0">
                 <p className="font-display font-bold text-sm">Aditri Admin</p>
@@ -311,4 +311,5 @@ export default function Dashboard() {
     </div>
   );
 }
+
 
