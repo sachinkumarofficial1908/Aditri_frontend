@@ -1,0 +1,112 @@
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Loader from './components/common/Loader';
+import ScrollToTop from './components/common/ScrollToTop';
+
+// Lazy-loaded pages
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Services = lazy(() => import('./pages/Services'));
+const Projects = lazy(() => import('./pages/Projects'));
+const Products = lazy(() => import('./pages/Products'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const MyOrders = lazy(() => import('./pages/MyOrders'));
+const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
+const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
+const AdminInquiries = lazy(() => import('./pages/admin/AdminInquiries'));
+const AdminProjects = lazy(() => import('./pages/admin/AdminProjects'));
+const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+
+// Protected route wrappers
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <Loader />;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+
+const AdminRoute = ({ children }) => {
+  const { isAdmin, isAuthenticated, loading } = useAuth();
+  if (loading) return <Loader />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAdmin) return <Navigate to="/" replace />;
+  return children;
+};
+
+const PublicLayout = ({ children }) => (
+  <div className="min-h-screen flex flex-col">
+    <Navbar />
+    <main className="flex-1">{children}</main>
+    <Footer />
+  </div>
+);
+
+const AdminLayout = ({ children }) => (
+  <div className="min-h-screen bg-gray-50">{children}</div>
+);
+
+function AppRoutes() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <Routes>
+        {/* Public */}
+        <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+        <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+        <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
+        <Route path="/projects" element={<PublicLayout><Projects /></PublicLayout>} />
+        <Route path="/products" element={<PublicLayout><Products /></PublicLayout>} />
+        <Route path="/products/:id" element={<PublicLayout><ProductDetail /></PublicLayout>} />
+        <Route path="/cart" element={<PublicLayout><Cart /></PublicLayout>} />
+        <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+        <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
+        <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
+
+        {/* Protected user routes */}
+        <Route path="/checkout" element={<ProtectedRoute><PublicLayout><Checkout /></PublicLayout></ProtectedRoute>} />
+        <Route path="/my-orders" element={<ProtectedRoute><PublicLayout><MyOrders /></PublicLayout></ProtectedRoute>} />
+
+        {/* Admin routes */}
+        <Route path="/admin" element={<AdminRoute><AdminLayout><Dashboard /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/products" element={<AdminRoute><AdminLayout><AdminProducts /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/orders" element={<AdminRoute><AdminLayout><AdminOrders /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/inquiries" element={<AdminRoute><AdminLayout><AdminInquiries /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/projects" element={<AdminRoute><AdminLayout><AdminProjects /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/users" element={<AdminRoute><AdminLayout><AdminUsers /></AdminLayout></AdminRoute>} />
+
+        <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+const NotFound = () => (
+  <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
+    <h1 className="text-8xl font-display font-bold text-primary-600">404</h1>
+    <p className="text-2xl font-semibold text-gray-700 mt-4">Page Not Found</p>
+    <a href="/" className="btn-primary mt-6">Back to Home</a>
+  </div>
+);
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <CartProvider>
+          <ScrollToTop />
+          <Toaster position="top-right" toastOptions={{ duration: 3000, style: { borderRadius: '10px', fontFamily: 'Inter, sans-serif' } }} />
+          <AppRoutes />
+        </CartProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
