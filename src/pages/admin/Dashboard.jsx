@@ -26,6 +26,8 @@ import {
   ChevronRight,
   Menu,
   X,
+  UploadCloud,
+  Briefcase,
 } from 'lucide-react';
 import { adminAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -37,11 +39,21 @@ const ADMIN_NAV = [
   { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
   { to: '/admin/inquiries', icon: MessageSquare, label: 'Inquiries' },
   { to: '/admin/projects', icon: Folder, label: 'Projects' },
+  { to: '/admin/muster-roll', icon: UploadCloud, label: 'Muster Roll' },
+  { to: '/admin/attendance-generator', icon: UploadCloud, label: 'Attendance Generator' },
+  { to: '/admin/wage-slip-generator', icon: UploadCloud, label: 'Wage Slip Generator' },
+  { to: '/admin/employees', icon: Briefcase, label: 'Employee Master' },
   { to: '/admin/users', icon: Users, label: 'Users' },
 ];
 
+const SUPERVISOR_NAV = [
+  { to: '/supervisor', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/supervisor/employees', icon: Briefcase, label: 'Employee Master' },
+];
+
 function AdminSidebar({ active, isMobileOpen = false, onClose = () => {} }) {
-  const { user, logout } = useAuth();
+  const { user, logout, isSupervisor } = useAuth();
+  const nav = isSupervisor ? SUPERVISOR_NAV : ADMIN_NAV;
 
   const handleLogout = async () => {
     await logout();
@@ -85,13 +97,13 @@ function AdminSidebar({ active, isMobileOpen = false, onClose = () => {} }) {
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {ADMIN_NAV.map(({ to, icon: Icon, label }) => (
+          {nav.map(({ to, icon: Icon, label }) => (
             <Link
               key={to}
               to={to}
               onClick={onClose}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                active === label.toLowerCase()
+                active === label.toLowerCase().replace(/\s+/g, '-')
                   ? 'bg-primary-600 text-white'
                   : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`}

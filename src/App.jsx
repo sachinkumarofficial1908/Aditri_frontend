@@ -27,6 +27,11 @@ const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
 const AdminInquiries = lazy(() => import('./pages/admin/AdminInquiries'));
 const AdminProjects = lazy(() => import('./pages/admin/AdminProjects'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+const AdminEmployees = lazy(() => import('./pages/admin/AdminEmployees'));
+const AdminMuster = lazy(() => import('./pages/admin/AdminMuster'));
+const AdminAttendance = lazy(() => import('./pages/admin/AdminAttendance'));
+const AdminWageSlipGenerator = lazy(() => import('./pages/admin/AdminWageSlipGenerator'));
+const SupervisorDashboard = lazy(() => import('./pages/supervisor/Dashboard'));
 
 // Protected route wrappers
 const ProtectedRoute = ({ children }) => {
@@ -41,6 +46,20 @@ const AdminRoute = ({ children }) => {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!isAdmin) return <Navigate to="/" replace />;
   return children;
+};
+
+const SupervisorRoute = ({ children }) => {
+  const { isAdmin, isSupervisor, isAuthenticated, loading } = useAuth();
+  if (loading) return <Loader />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAdmin && !isSupervisor) return <Navigate to="/" replace />;
+  return children;
+};
+
+const GuestRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <Loader />;
+  return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
 
 const PublicLayout = ({ children }) => (
@@ -68,8 +87,8 @@ function AppRoutes() {
         <Route path="/products/:id" element={<PublicLayout><ProductDetail /></PublicLayout>} />
         <Route path="/cart" element={<PublicLayout><Cart /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
-        <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
-        <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
+        <Route path="/login" element={<GuestRoute><PublicLayout><Login /></PublicLayout></GuestRoute>} />
+        <Route path="/register" element={<GuestRoute><PublicLayout><Register /></PublicLayout></GuestRoute>} />
 
         {/* Protected user routes */}
         <Route path="/checkout" element={<ProtectedRoute><PublicLayout><Checkout /></PublicLayout></ProtectedRoute>} />
@@ -82,6 +101,12 @@ function AppRoutes() {
         <Route path="/admin/inquiries" element={<AdminRoute><AdminLayout><AdminInquiries /></AdminLayout></AdminRoute>} />
         <Route path="/admin/projects" element={<AdminRoute><AdminLayout><AdminProjects /></AdminLayout></AdminRoute>} />
         <Route path="/admin/users" element={<AdminRoute><AdminLayout><AdminUsers /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/employees" element={<SupervisorRoute><AdminLayout><AdminEmployees /></AdminLayout></SupervisorRoute>} />
+        <Route path="/supervisor" element={<SupervisorRoute><AdminLayout><SupervisorDashboard /></AdminLayout></SupervisorRoute>} />
+        <Route path="/supervisor/employees" element={<SupervisorRoute><AdminLayout><AdminEmployees /></AdminLayout></SupervisorRoute>} />
+        <Route path="/admin/muster-roll" element={<AdminRoute><AdminLayout><AdminMuster /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/attendance-generator" element={<AdminRoute><AdminLayout><AdminAttendance /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/wage-slip-generator" element={<AdminRoute><AdminLayout><AdminWageSlipGenerator /></AdminLayout></AdminRoute>} />
 
         <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
       </Routes>

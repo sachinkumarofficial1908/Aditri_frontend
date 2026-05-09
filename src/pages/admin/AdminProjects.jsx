@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, Edit2, Trash2, Folder, X, Check } from 'lucide-react';
+import { Plus, Edit2, Trash2, Folder, X, Check, ArrowLeft } from 'lucide-react';
 import { projectAPI } from '../../utils/api';
 import { AdminSidebar } from './Dashboard';
 import toast from 'react-hot-toast';
@@ -100,7 +101,12 @@ export default function AdminProjects() {
       <AdminSidebar active="projects" />
       <main className="ml-64 flex-1 p-8 bg-gray-50">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-display font-bold text-gray-900">Projects</h1>
+          <div className="flex items-center gap-3">
+            <Link to="/admin" className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition">
+              <ArrowLeft size={16} /> Back
+            </Link>
+            <h1 className="text-2xl font-display font-bold text-gray-900">Projects</h1>
+          </div>
           <button onClick={() => setShowForm(true)} className="btn-primary"><Plus size={18} /> Add Project</button>
         </div>
 

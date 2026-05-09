@@ -45,13 +45,19 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem(ENV.authTokenKey);
     localStorage.removeItem(ENV.authUserKey);
     setUser(null);
+    if (typeof window !== 'undefined') {
+      const loginUrl = ENV.loginPath || '/login';
+      window.history.replaceState(null, '', loginUrl);
+      window.location.replace(loginUrl);
+    }
   }, []);
 
   const isAdmin = user?.role === 'admin';
+  const isSupervisor = user?.role === 'supervisor';
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, isAdmin, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, isAdmin, isSupervisor, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );

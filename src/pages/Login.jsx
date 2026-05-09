@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, LogIn, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getErrorMessage } from '../utils/api';
 import toast from 'react-hot-toast';
 
 export function Login() {
@@ -20,7 +21,7 @@ export function Login() {
       toast.success(`Welcome back, ${user.name}!`);
       navigate(user.role === 'admin' ? '/admin' : from, { replace: true });
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed');
+      toast.error(getErrorMessage(err));
     }
   };
 
@@ -107,7 +108,7 @@ export function Register() {
       toast.success('Account created successfully!');
       navigate('/', { replace: true });
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Registration failed');
+      toast.error(getErrorMessage(err));
     }
   };
 

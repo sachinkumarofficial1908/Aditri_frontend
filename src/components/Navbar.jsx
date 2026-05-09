@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingCart, User, LogOut, ChevronDown, Phone, Shield } from 'lucide-react';
+import { Menu, X, ShoppingCart, User, LogOut, ChevronDown, Phone, Shield, Briefcase } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
@@ -119,6 +119,11 @@ export default function Navbar() {
                             <Shield size={15} /> Admin Panel
                           </Link>
                         )}
+                        {user?.role === 'supervisor' && (
+                          <Link to="/supervisor" className="flex items-center gap-2 px-4 py-2 text-sm text-primary-700 hover:bg-primary-50 font-medium">
+                            <Briefcase size={15} /> Supervisor Panel
+                          </Link>
+                        )}
                         <Link to="/my-orders" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                           <User size={15} /> My Orders
                         </Link>
@@ -159,6 +164,11 @@ export default function Navbar() {
                     {label}
                   </NavLink>
                 ))}
+                {isAuthenticated && user?.role === 'supervisor' && (
+                  <Link to="/supervisor" className="block px-3 py-2.5 rounded-lg text-sm font-medium text-primary-700 hover:bg-primary-50">
+                    Supervisor Panel
+                  </Link>
+                )}
                 {!isAuthenticated && (
                   <div className="pt-2 grid grid-cols-2 gap-2">
                     <Link to="/login" className="btn-primary text-sm py-2 text-center">Login</Link>

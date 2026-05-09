@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Edit2, Trash2, Search, Package, X, Check,
-  Upload, ImageIcon, Star, Eye, EyeOff, ChevronDown,
+  Upload, ImageIcon, Star, Eye, EyeOff, ChevronDown, ArrowLeft,
 } from 'lucide-react';
 import { productAPI, uploadAPI } from '../../utils/api';
 import { AdminSidebar } from './Dashboard';
@@ -571,11 +572,16 @@ export default function AdminProducts() {
       <main className="ml-64 flex-1 p-8 bg-gray-50">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-display font-bold text-gray-900">Products</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {data?.total || 0} total · {products.filter(p => p.isFeatured).length} featured · {products.filter(p => p.stock === 0).length} out of stock
-            </p>
+          <div className="flex items-center gap-3">
+            <Link to="/admin" className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition">
+              <ArrowLeft size={16} /> Back
+            </Link>
+            <div>
+              <h1 className="text-2xl font-display font-bold text-gray-900">Products</h1>
+              <p className="text-sm text-gray-500 mt-1">
+                {data?.total || 0} total · {products.filter(p => p.isFeatured).length} featured · {products.filter(p => p.stock === 0).length} out of stock
+              </p>
+            </div>
           </div>
           <button onClick={() => setShowForm(true)} className="btn-primary">
             <Plus size={18} /> Add Product

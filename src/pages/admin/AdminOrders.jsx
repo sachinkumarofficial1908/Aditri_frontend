@@ -1,8 +1,9 @@
 // AdminOrders.jsx
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, ArrowLeft } from 'lucide-react';
 import { orderAPI } from '../../utils/api';
 import { AdminSidebar } from './Dashboard';
 import toast from 'react-hot-toast';
@@ -39,12 +40,17 @@ export function AdminOrders() {
             <h1 className="text-2xl font-display font-bold text-gray-900">Orders</h1>
             <p className="text-sm text-gray-500 mt-1">{data?.total || 0} total orders</p>
           </div>
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="input-field w-auto text-sm py-2.5">
-            <option value="">All Status</option>
-            {['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-3">
+            <Link to="/admin" className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition">
+              <ArrowLeft size={16} /> Back
+            </Link>
+            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="input-field w-auto text-sm py-2.5">
+              <option value="">All Status</option>
+              {['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

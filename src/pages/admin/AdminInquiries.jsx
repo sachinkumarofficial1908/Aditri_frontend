@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Eye } from 'lucide-react';
+import { MessageSquare, X, Send, Eye, ArrowLeft } from 'lucide-react';
 import { inquiryAPI } from '../../utils/api';
 import { AdminSidebar } from './Dashboard';
 import toast from 'react-hot-toast';
@@ -98,9 +99,14 @@ export default function AdminInquiries() {
       <AdminSidebar active="inquiries" />
       <main className="ml-64 flex-1 p-8 bg-gray-50">
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-display font-bold text-gray-900">Inquiries</h1>
-            <p className="text-sm text-gray-500 mt-1">{data?.total || 0} total</p>
+          <div className="flex items-center gap-3">
+            <Link to="/admin" className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition">
+              <ArrowLeft size={16} /> Back
+            </Link>
+            <div>
+              <h1 className="text-2xl font-display font-bold text-gray-900">Inquiries</h1>
+              <p className="text-sm text-gray-500 mt-1">{data?.total || 0} total</p>
+            </div>
           </div>
           <select value={status} onChange={e => setStatus(e.target.value)} className="input-field w-auto text-sm py-2.5">
             <option value="">All Status</option>

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ENV } from './env';
+import { ENV } from './env.js';
 
 const api = axios.create({
   baseURL: ENV.apiBaseUrl,
@@ -29,6 +29,27 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export const getErrorMessage = (error) => {
+  if (!error) return 'Something went wrong. Please try again.';
+
+  if (error.response) {
+    const serverMessage = error.response?.data?.message || error.response?.statusText;
+    if (error.response.status >= 500) {
+      return 'Unable to connect to the server. Please check your connection or try again later.';
+    }
+    if (typeof serverMessage === 'string' && serverMessage.trim()) {
+      return serverMessage;
+    }
+    return `Request failed with status ${error.response.status}. Please try again.`;
+  }
+
+  if (error.request) {
+    return 'Unable to reach the server. Please check your internet connection.';
+  }
+
+  return error.message || 'Something went wrong. Please try again.';
+};
 
 export default api;
 
@@ -75,11 +96,48 @@ export const projectAPI = {
 export const adminAPI = {
   getDashboard: () => api.get('/admin/dashboard'),
   getUsers: (params) => api.get('/admin/users', { params }),
+  createSupervisor: (data) => api.post('/admin/supervisors', data),
   toggleUser: (id) => api.put(`/admin/users/${id}/toggle`),
+};
+
+export const employeeAPI = {
+  getAll: (params) => api.get('/employees', { params }),
+  getById: (id) => api.get(`/employees/${id}`),
+  create: (data) => api.post('/employees', data),
+  update: (id, data) => api.patch(`/employees/${id}`, data),
+  terminate: (id) => api.patch(`/employees/${id}/terminate`),
+  remove: (id) => api.delete(`/employees/${id}`),
 };
 
 export const uploadAPI = {
   images: (formData) => api.post('/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+};
+
+export const musterAPI = {
+  generate: (formData) => api.post('/muster/generate', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    responseType: 'blob',
+    timeout: 60000,
+  }),
+};
+
+export const attendanceAPI = {
+  validate: (formData) => api.post('/attendance/validate', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  generate: (formData) => api.post('/attendance/generate', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    responseType: 'blob',
+    timeout: 60000,
+  }),
+};
+
+export const wageSlipAPI = {
+  generate: (formData) => api.post('/wage-slips/generate', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    responseType: 'blob',
+    timeout: 60000,
   }),
 };
