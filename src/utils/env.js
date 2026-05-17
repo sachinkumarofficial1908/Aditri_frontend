@@ -15,3 +15,5 @@ export const ENV = {
   cartKey: getEnv('VITE_CART_KEY', 'aditri_cart'),
   loginPath: getEnv('VITE_LOGIN_PATH', '/login'),
 };
+
+export const API_BASE_URL = ENV.apiBaseUrl;

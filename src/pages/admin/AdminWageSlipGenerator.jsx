@@ -17,11 +17,14 @@ export default function AdminWageSlipGenerator() {
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
   const [loading, setLoading] = useState(false);
+  const [validating, setValidating] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState('');
   const [downloadName, setDownloadName] = useState('');
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState([]);
   const [missingHeaders, setMissingHeaders] = useState([]);
+  const [foundHeaders, setFoundHeaders] = useState([]);
+  const [validationPassed, setValidationPassed] = useState(false);
   const [generatedCount, setGeneratedCount] = useState(0);
   const [skippedRows, setSkippedRows] = useState(0);
 
@@ -31,6 +34,8 @@ export default function AdminWageSlipGenerator() {
     setMessage('');
     setErrors([]);
     setMissingHeaders([]);
+    setFoundHeaders([]);
+    setValidationPassed(false);
     setGeneratedCount(0);
     setSkippedRows(0);
   };
@@ -56,6 +61,44 @@ export default function AdminWageSlipGenerator() {
       }
     };
   }, [downloadUrl]);
+
+  const handleValidate = async () => {
+    if (!file) {
+      toast.error('Please upload an Excel file first.');
+      return;
+    }
+
+    setValidating(true);
+    setErrors([]);
+    setMissingHeaders([]);
+    setFoundHeaders([]);
+    setValidationPassed(false);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await wageSlipAPI.validate(formData);
+      const { missingHeaders: missing, foundHeaders: found } = response.data;
+
+      setFoundHeaders(found || []);
+
+      if (missing?.length) {
+        setMissingHeaders(missing);
+        setErrors([`${missing.length} required header(s) missing`]);
+        toast.error('Missing headers detected. You can still generate with blank values.');
+      } else {
+        setValidationPassed(true);
+        toast.success('File validation passed! All required headers found.');
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || 'Failed to validate file.';
+      setErrors([message]);
+      toast.error(message);
+    } finally {
+      setValidating(false);
+    }
+  };
 
   const fetchGenerate = async (confirmMissing = false) => {
     if (!file) {
@@ -190,6 +233,30 @@ export default function AdminWageSlipGenerator() {
                 <p>Other Allowance (will be placed in G10 of wage slip)</p>
               </div>
             </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                type="button"
+                onClick={handleValidate}
+                disabled={validating || !file}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-primary-600 bg-white px-5 py-3 text-sm font-semibold text-primary-600 transition hover:bg-primary-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {validating ? 'Validating...' : 'Validate File'}
+              </button>
+
+              {validationPassed && (
+                <div className="inline-flex items-center gap-2 rounded-2xl border border-green-600 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700">
+                  ✓ Validation passed
+                </div>
+              )}
+            </div>
+
+            {foundHeaders.length > 0 && (
+              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+                <p className="font-semibold">Found headers ({foundHeaders.length}):</p>
+                <p className="mt-2">{foundHeaders.join(', ')}</p>
+              </div>
+            )}
 
             {errors.length > 0 && (
               <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">

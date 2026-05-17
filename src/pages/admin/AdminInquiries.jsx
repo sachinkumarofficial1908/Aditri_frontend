@@ -20,7 +20,14 @@ function InquiryModal({ inquiry, onClose }) {
 
   const mutation = useMutation({
     mutationFn: (data) => inquiryAPI.updateStatus(inquiry._id, data),
-    onSuccess: () => { qc.invalidateQueries(['admin-inquiries']); toast.success('Updated!'); onClose(); },
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries(['admin-inquiries']);
+      toast.success(variables?.adminReply ? 'Reply sent to customer!' : 'Updated!');
+      onClose();
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Unable to update inquiry.');
+    },
   });
 
   return (
@@ -68,9 +75,13 @@ function InquiryModal({ inquiry, onClose }) {
           </div>
 
           <div className="flex gap-3">
-            <select onChange={e => mutation.mutate({ status: e.target.value })} className="input-field flex-1 py-2.5 text-sm">
+            <select
+              defaultValue={inquiry.status}
+              onChange={e => mutation.mutate({ status: e.target.value })}
+              className="input-field flex-1 py-2.5 text-sm"
+            >
               {['new', 'read', 'replied', 'closed'].map(s => (
-                <option key={s} value={s} selected={inquiry.status === s}>{s}</option>
+                <option key={s} value={s}>{s}</option>
               ))}
             </select>
             <button onClick={() => mutation.mutate({ status: 'replied', adminReply: reply })}

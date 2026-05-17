@@ -40,6 +40,13 @@ export const AuthProvider = ({ children }) => {
     return userData;
   }, []);
 
+  const completeOAuthLogin = useCallback(({ token, user: userData }) => {
+    localStorage.setItem(ENV.authTokenKey, token);
+    localStorage.setItem(ENV.authUserKey, JSON.stringify(userData));
+    setUser(userData);
+    return userData;
+  }, []);
+
   const logout = useCallback(async () => {
     try { await authAPI.logout(); } catch {}
     localStorage.removeItem(ENV.authTokenKey);
@@ -57,7 +64,17 @@ export const AuthProvider = ({ children }) => {
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, isAdmin, isSupervisor, isAuthenticated }}>
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      login,
+      register,
+      completeOAuthLogin,
+      logout,
+      isAdmin,
+      isSupervisor,
+      isAuthenticated,
+    }}>
       {children}
     </AuthContext.Provider>
   );

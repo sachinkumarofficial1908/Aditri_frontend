@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { SalaryProvider } from './context/SalaryContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Loader from './components/common/Loader';
@@ -20,6 +21,7 @@ const Checkout = lazy(() => import('./pages/Checkout'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+const OAuthCallback = lazy(() => import('./pages/OAuthCallback'));
 const MyOrders = lazy(() => import('./pages/MyOrders'));
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
 const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
@@ -31,7 +33,11 @@ const AdminEmployees = lazy(() => import('./pages/admin/AdminEmployees'));
 const AdminMuster = lazy(() => import('./pages/admin/AdminMuster'));
 const AdminAttendance = lazy(() => import('./pages/admin/AdminAttendance'));
 const AdminWageSlipGenerator = lazy(() => import('./pages/admin/AdminWageSlipGenerator'));
+const AdminPaymentReceipts = lazy(() => import('./pages/admin/AdminPaymentReceipts'));
+const SalaryGeneration = lazy(() => import('./pages/admin/SalaryGeneration'));
 const SupervisorDashboard = lazy(() => import('./pages/supervisor/Dashboard'));
+const AttendanceEntry = lazy(() => import('./pages/supervisor/AttendanceEntry'));
+const BulkAttendanceUpload = lazy(() => import('./pages/supervisor/BulkAttendanceUpload'));
 
 // Protected route wrappers
 const ProtectedRoute = ({ children }) => {
@@ -87,6 +93,7 @@ function AppRoutes() {
         <Route path="/products/:id" element={<PublicLayout><ProductDetail /></PublicLayout>} />
         <Route path="/cart" element={<PublicLayout><Cart /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
         <Route path="/login" element={<GuestRoute><PublicLayout><Login /></PublicLayout></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><PublicLayout><Register /></PublicLayout></GuestRoute>} />
 
@@ -107,6 +114,12 @@ function AppRoutes() {
         <Route path="/admin/muster-roll" element={<AdminRoute><AdminLayout><AdminMuster /></AdminLayout></AdminRoute>} />
         <Route path="/admin/attendance-generator" element={<AdminRoute><AdminLayout><AdminAttendance /></AdminLayout></AdminRoute>} />
         <Route path="/admin/wage-slip-generator" element={<AdminRoute><AdminLayout><AdminWageSlipGenerator /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/payment-receipts" element={<AdminRoute><AdminLayout><AdminPaymentReceipts /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/salary/generate" element={<AdminRoute><AdminLayout><SalaryGeneration /></AdminLayout></AdminRoute>} />
+        
+        {/* Supervisor Salary/Attendance routes */}
+        <Route path="/supervisor/attendance/entry" element={<SupervisorRoute><AdminLayout><AttendanceEntry /></AdminLayout></SupervisorRoute>} />
+        <Route path="/supervisor/attendance/bulk" element={<SupervisorRoute><AdminLayout><BulkAttendanceUpload /></AdminLayout></SupervisorRoute>} />
 
         <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
       </Routes>
@@ -127,9 +140,11 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
-          <ScrollToTop />
-          <Toaster position="top-right" toastOptions={{ duration: 3000, style: { borderRadius: '10px', fontFamily: 'Inter, sans-serif' } }} />
-          <AppRoutes />
+          <SalaryProvider>
+            <ScrollToTop />
+            <Toaster position="top-right" toastOptions={{ duration: 3000, style: { borderRadius: '10px', fontFamily: 'Inter, sans-serif' } }} />
+            <AppRoutes />
+          </SalaryProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

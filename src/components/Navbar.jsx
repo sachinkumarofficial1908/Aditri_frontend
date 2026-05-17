@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingCart, User, LogOut, ChevronDown, Phone, Shield, Briefcase } from 'lucide-react';
+import { Menu, X, ShoppingCart, LogOut, ChevronDown, Phone, Shield, Briefcase, PackageCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
@@ -19,9 +19,10 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [userMenu, setUserMenu] = useState(false);
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isSupervisor, logout } = useAuth();
   const { itemCount } = useCart();
   const location = useLocation();
+  const showMyOrders = isAuthenticated && !isAdmin && !isSupervisor;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -124,9 +125,11 @@ export default function Navbar() {
                             <Briefcase size={15} /> Supervisor Panel
                           </Link>
                         )}
-                        <Link to="/my-orders" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                          <User size={15} /> My Orders
-                        </Link>
+                        {showMyOrders && (
+                          <Link to="/my-orders" className="flex items-center gap-2 px-4 py-2 text-sm text-primary-700 hover:bg-primary-50 font-medium">
+                            <PackageCheck size={15} /> My Orders
+                          </Link>
+                        )}
                         <hr className="my-1 border-gray-100" />
                         <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
                           <LogOut size={15} /> Logout
@@ -167,6 +170,11 @@ export default function Navbar() {
                 {isAuthenticated && user?.role === 'supervisor' && (
                   <Link to="/supervisor" className="block px-3 py-2.5 rounded-lg text-sm font-medium text-primary-700 hover:bg-primary-50">
                     Supervisor Panel
+                  </Link>
+                )}
+                {showMyOrders && (
+                  <Link to="/my-orders" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-primary-700 hover:bg-primary-50">
+                    <PackageCheck size={16} /> My Orders
                   </Link>
                 )}
                 {!isAuthenticated && (

@@ -56,11 +56,23 @@ export default api;
 // API helpers
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
+  sendRegisterEmailOtp: (email) => api.post('/auth/register/email-otp/send', { email }),
+  verifyRegisterEmailOtp: (data) => api.post('/auth/register/email-otp/verify', data),
   login: (data) => api.post('/auth/login', data),
+  getGoogleOAuthUrl: ({ mode = 'login', redirect = '/' } = {}) => {
+    const baseUrl = ENV.apiBaseUrl.replace(/\/$/, '');
+    const url = new URL(`${baseUrl}/auth/google`, window.location.origin);
+    url.searchParams.set('mode', mode);
+    url.searchParams.set('redirect', redirect);
+    url.searchParams.set('clientUrl', window.location.origin);
+    return url.toString();
+  },
   logout: () => api.post('/auth/logout'),
   getMe: () => api.get('/auth/me'),
   updateProfile: (data) => api.put('/auth/update-profile', data),
   changePassword: (data) => api.put('/auth/change-password', data),
+  sendPhoneOtp: (phone) => api.post('/auth/phone-otp/send', { phone }),
+  verifyPhoneOtp: (data) => api.post('/auth/phone-otp/verify', data),
 };
 
 export const productAPI = {
@@ -104,20 +116,21 @@ export const employeeAPI = {
   getAll: (params) => api.get('/employees', { params }),
   getById: (id) => api.get(`/employees/${id}`),
   create: (data) => api.post('/employees', data),
+  createWithFile: (formData) =>
+    api.post('/employees', formData, {}),
   update: (id, data) => api.patch(`/employees/${id}`, data),
+  updateWithFile: (id, formData) =>
+    api.patch(`/employees/${id}`, formData, {}),
   terminate: (id) => api.patch(`/employees/${id}/terminate`),
   remove: (id) => api.delete(`/employees/${id}`),
 };
 
 export const uploadAPI = {
-  images: (formData) => api.post('/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
+  images: (formData) => api.post('/upload', formData, {}),
 };
 
 export const musterAPI = {
   generate: (formData) => api.post('/muster/generate', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
     responseType: 'blob',
     timeout: 60000,
   }),
@@ -125,19 +138,32 @@ export const musterAPI = {
 
 export const attendanceAPI = {
   validate: (formData) => api.post('/attendance/validate', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 30000,
   }),
   generate: (formData) => api.post('/attendance/generate', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
     responseType: 'blob',
     timeout: 60000,
   }),
 };
 
 export const wageSlipAPI = {
+  validate: (formData) => api.post('/wage-slips/validate', formData, {
+    timeout: 30000,
+  }),
   generate: (formData) => api.post('/wage-slips/generate', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
     responseType: 'blob',
     timeout: 60000,
+  }),
+};
+
+export const paymentReceiptAPI = {
+  validate: (formData) => api.post('/receipts/validate', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 30000,
+  }),
+  generate: (formData) => api.post('/receipts/generate', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    responseType: 'blob',
+    timeout: 120000,
   }),
 };

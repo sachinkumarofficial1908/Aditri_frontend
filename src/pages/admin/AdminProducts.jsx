@@ -590,10 +590,10 @@ export default function AdminProducts() {
 
         {/* Sub-category quick filters */}
         <div className="mb-5 overflow-x-auto">
-          <div className="flex gap-2 pb-2 min-w-max">
+          <div className="flex flex-wrap gap-2 pb-2 w-full min-w-min lg:flex-nowrap lg:min-w-max">
             <button
               onClick={() => setSubcategoryFilter('')}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${!subcategoryFilter ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${!subcategoryFilter ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
             >
               All ({data?.total || 0})
             </button>
@@ -601,7 +601,7 @@ export default function AdminProducts() {
               <button
                 key={s}
                 onClick={() => setSubcategoryFilter(subcategoryFilter === s ? '' : s)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                   subcategoryFilter === s ? 'bg-primary-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-primary-50 hover:border-primary-200'
                 }`}
               >

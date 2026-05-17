@@ -28,6 +28,8 @@ import {
   X,
   UploadCloud,
   Briefcase,
+  DollarSign,
+  Clock,
 } from 'lucide-react';
 import { adminAPI } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -40,15 +42,20 @@ const ADMIN_NAV = [
   { to: '/admin/inquiries', icon: MessageSquare, label: 'Inquiries' },
   { to: '/admin/projects', icon: Folder, label: 'Projects' },
   { to: '/admin/muster-roll', icon: UploadCloud, label: 'Muster Roll' },
-  { to: '/admin/attendance-generator', icon: UploadCloud, label: 'Attendance Generator' },
-  { to: '/admin/wage-slip-generator', icon: UploadCloud, label: 'Wage Slip Generator' },
+  { to: '/admin/attendance-generator', icon: UploadCloud, label: 'Timing Attendance ' },
+  { to: '/admin/wage-slip-generator', icon: UploadCloud, label: 'PPGCL Wage Slip' },
+  { to: '/admin/payment-receipts', icon: UploadCloud, label: 'Payment Receipts' },
+  { to: '/admin/salary/generate', icon: DollarSign, label: 'Salary Management' },
   { to: '/admin/employees', icon: Briefcase, label: 'Employee Master' },
+  { to: '/admin/activity-logs', icon: Clock, label: 'Activity Logs' },
   { to: '/admin/users', icon: Users, label: 'Users' },
 ];
 
 const SUPERVISOR_NAV = [
   { to: '/supervisor', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/supervisor/employees', icon: Briefcase, label: 'Employee Master' },
+  { to: '/supervisor/attendance/entry', icon: DollarSign, label: 'Attendance Entry' },
+  { to: '/supervisor/attendance/bulk', icon: UploadCloud, label: 'Bulk Upload' },
 ];
 
 function AdminSidebar({ active, isMobileOpen = false, onClose = () => {} }) {

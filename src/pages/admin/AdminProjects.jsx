@@ -76,6 +76,7 @@ function ProjectForm({ initial, onSave, onClose }) {
 export default function AdminProjects() {
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -86,14 +87,17 @@ export default function AdminProjects() {
   const createMutation = useMutation({
     mutationFn: projectAPI.create,
     onSuccess: () => { qc.invalidateQueries(['admin-projects']); setShowForm(false); toast.success('Project added!'); },
+    onError: () => toast.error('Failed to add project'),
   });
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => projectAPI.update(id, data),
-    onSuccess: () => { qc.invalidateQueries(['admin-projects']); setEditItem(null); toast.success('Updated!'); },
+    onSuccess: () => { qc.invalidateQueries(['admin-projects']); setEditItem(null); toast.success('Project updated!'); },
+    onError: () => toast.error('Failed to update project'),
   });
   const deleteMutation = useMutation({
     mutationFn: projectAPI.delete,
-    onSuccess: () => { qc.invalidateQueries(['admin-projects']); toast.success('Deleted'); },
+    onSuccess: () => { qc.invalidateQueries(['admin-projects']); setDeleteConfirm(null); toast.success('Project deleted'); },
+    onError: () => toast.error('Failed to delete project'),
   });
 
   return (
@@ -124,7 +128,7 @@ export default function AdminProjects() {
                   </div>
                   <div className="flex gap-1">
                     <button onClick={() => setEditItem(p)} className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-100 transition-colors"><Edit2 size={14} /></button>
-                    <button onClick={() => window.confirm('Delete?') && deleteMutation.mutate(p._id)} className="p-1.5 rounded-lg text-red-600 hover:bg-red-100 transition-colors"><Trash2 size={14} /></button>
+                    <button onClick={() => setDeleteConfirm(p)} className="p-1.5 rounded-lg text-red-600 hover:bg-red-100 transition-colors"><Trash2 size={14} /></button>
                   </div>
                 </div>
                 <h3 className="font-bold text-gray-900 text-sm mt-1 line-clamp-2">{p.title}</h3>
@@ -141,6 +145,22 @@ export default function AdminProjects() {
         <AnimatePresence>
           {showForm && <ProjectForm onSave={createMutation.mutate} onClose={() => setShowForm(false)} />}
           {editItem && <ProjectForm initial={editItem} onSave={(data) => updateMutation.mutate({ id: editItem._id, data })} onClose={() => setEditItem(null)} />}
+          {deleteConfirm && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+              <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-white rounded-2xl shadow-lg max-w-sm w-full p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Project?</h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  Are you sure you want to delete <strong>"{deleteConfirm.title}"</strong>? This action cannot be undone.
+                </p>
+                <div className="flex gap-3">
+                  <button onClick={() => setDeleteConfirm(null)} className="flex-1 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition">Cancel</button>
+                  <button onClick={() => deleteMutation.mutate(deleteConfirm._id)} disabled={deleteMutation.isPending} className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
     </div>
