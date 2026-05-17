@@ -7,6 +7,7 @@ import {
   Share2, Heart, Minus, Plus, Tag, Shield
 } from 'lucide-react';
 import { productAPI } from '../utils/api';
+import { resolveImageUrl } from '../utils/imageUrl';
 import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
 
@@ -76,7 +77,7 @@ export default function ProductDetail() {
             >
               {product.images?.[activeImage]?.url ? (
                 <img
-                  src={product.images[activeImage].url}
+                  src={resolveImageUrl(product.images[activeImage].url)}
                   alt={product.images[activeImage].alt || product.name}
                   className="w-full h-full object-contain p-6"
                 />
@@ -95,7 +96,7 @@ export default function ProductDetail() {
                     onClick={() => setActiveImage(i)}
                     className={`w-16 h-16 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all ${activeImage === i ? 'border-primary-500' : 'border-gray-200 hover:border-gray-300'}`}
                   >
-                    <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />
+                    <img src={resolveImageUrl(img.url)} alt={img.alt} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, SlidersHorizontal, X, Grid3X3, List, Tag } from 'lucide-react';
 import { productAPI } from '../utils/api';
+import { resolveImageUrl } from '../utils/imageUrl';
 import ProductCard from '../components/common/ProductCard';
 import AnimatedSection from '../components/common/AnimatedSection';
 
@@ -320,7 +321,7 @@ function ListProductCard({ product }) {
     <motion.div whileHover={{ x: 4 }} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex gap-4">
       <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
         {product.images?.[0]?.url
-          ? <img src={product.images[0].url} alt={product.name} className="w-full h-full object-cover" />
+          ? <img src={resolveImageUrl(product.images[0].url)} alt={product.name} className="w-full h-full object-cover" />
           : <div className="w-full h-full flex items-center justify-center text-gray-300 text-2xl">📦</div>
         }
       </div>

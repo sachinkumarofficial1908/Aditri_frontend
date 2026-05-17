@@ -7,6 +7,7 @@ import {
   Upload, ImageIcon, Star, Eye, EyeOff, ChevronDown, ArrowLeft,
 } from 'lucide-react';
 import { productAPI, uploadAPI } from '../../utils/api';
+import { resolveImageUrl } from '../../utils/imageUrl';
 import { AdminSidebar } from './Dashboard';
 import toast from 'react-hot-toast';
 
@@ -108,7 +109,7 @@ function ImageUploader({ images = [], onChange, productId }) {
             >
               <div className="aspect-square">
                 <img
-                  src={img.url}
+                  src={resolveImageUrl(img.url)}
                   alt={img.alt || `Product image ${idx + 1}`}
                   className="w-full h-full object-cover"
                   onError={(e) => { e.target.src = ''; e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-300"><svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>'; }}
@@ -663,7 +664,7 @@ export default function AdminProducts() {
                       <div className="flex items-center gap-3 max-w-[220px]">
                         <div className="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden">
                           {p.images?.[0]?.url ? (
-                            <img src={p.images[0].url} alt={p.name} className="w-full h-full object-cover" />
+                            <img src={resolveImageUrl(p.images[0].url)} alt={p.name} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Package size={16} className="text-gray-400" />

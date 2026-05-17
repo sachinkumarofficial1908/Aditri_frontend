@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Eye, Star, Package } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { resolveImageUrl } from '../../utils/imageUrl';
 import toast from 'react-hot-toast';
 
 export default function ProductCard({ product }) {
@@ -26,7 +27,7 @@ export default function ProductCard({ product }) {
       <div className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 aspect-square">
         {product.images?.[0]?.url ? (
           <img
-            src={product.images[0].url}
+            src={resolveImageUrl(product.images[0].url)}
             alt={product.images[0].alt || product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"

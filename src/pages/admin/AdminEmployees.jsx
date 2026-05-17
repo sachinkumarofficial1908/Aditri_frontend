@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { Plus, Trash2, CheckCircle, UserCheck, XCircle, ArrowLeft, Upload, X, Download, FileSpreadsheet } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { employeeAPI } from '../../utils/api';
+import { resolveImageUrl } from '../../utils/imageUrl';
 import { validations, formatField, validateField, formatBackendErrors } from '../../utils/validations';
 import { AdminSidebar } from './Dashboard';
 import toast from 'react-hot-toast';
@@ -339,7 +340,7 @@ export default function AdminEmployees() {
     setEditingEmployee(employee);
     setBackendErrors({});
     setPhotoFile(null);
-    setPhotoPreview(employee.photoUrl || null);
+    setPhotoPreview(resolveImageUrl(employee.photoUrl || employee.photoPath) || null);
 
     const formattedEmployee = {
       ...employee,

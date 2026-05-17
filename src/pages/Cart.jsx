@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, Package } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 export default function Cart() {
   const { items, removeItem, updateQty, subtotal, clearCart } = useCart();
@@ -40,7 +41,7 @@ export default function Cart() {
                   className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex gap-4">
                   <div className="w-20 h-20 bg-gray-100 rounded-xl flex-shrink-0 overflow-hidden">
                     {item.images?.[0]?.url ? (
-                      <img src={item.images[0].url} alt={item.name} className="w-full h-full object-cover" />
+                      <img src={resolveImageUrl(item.images[0].url)} alt={item.name} className="w-full h-full object-cover" />
                     ) : <Package size={32} className="text-gray-300 m-auto mt-4" />}
                   </div>
                   <div className="flex-1 min-w-0">
