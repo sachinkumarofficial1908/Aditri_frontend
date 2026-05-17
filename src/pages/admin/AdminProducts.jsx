@@ -6,7 +6,7 @@ import {
   Plus, Edit2, Trash2, Search, Package, X, Check,
   Upload, ImageIcon, Star, Eye, EyeOff, ChevronDown, ArrowLeft,
 } from 'lucide-react';
-import { productAPI, uploadAPI } from '../../utils/api';
+import { getErrorMessage, productAPI, uploadAPI } from '../../utils/api';
 import { resolveImageUrl } from '../../utils/imageUrl';
 import { AdminSidebar } from './Dashboard';
 import toast from 'react-hot-toast';
@@ -24,6 +24,11 @@ const SUBCATEGORIES = [
   'Civil Supplies',
 ];
 const UNITS = ['piece', 'meter', 'kg', 'pack', 'set', 'roll', 'box', 'pair', 'kit', 'MT', 'CFT', 'sq.ft', 'bundle', 'bag', 'liter'];
+const MAX_PRODUCT_IMAGES = 5;
+const MAX_IMAGE_SIZE_MB = 10;
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
 // ─── Image Uploader Component ─────────────────────────────────────────────────
 function ImageUploader({ images = [], onChange, productId }) {
@@ -31,17 +36,39 @@ function ImageUploader({ images = [], onChange, productId }) {
   const fileRef = useRef(null);
 
   const handleFiles = async (files) => {
-    if (!files.length) return;
+    const selectedFiles = Array.from(files || []);
+    if (!selectedFiles.length) return;
+
+    if (images.length + selectedFiles.length > MAX_PRODUCT_IMAGES) {
+      toast.error(`You can upload maximum ${MAX_PRODUCT_IMAGES} images per product.`);
+      return;
+    }
+
+    const invalidFile = selectedFiles.find((file) => {
+      const extension = file.name.split('.').pop()?.toLowerCase();
+      return !ALLOWED_IMAGE_TYPES.includes(file.type) && !ALLOWED_IMAGE_EXTENSIONS.includes(extension);
+    });
+    if (invalidFile) {
+      toast.error(`${invalidFile.name} is not a supported image. Use JPG, PNG, WebP, or GIF.`);
+      return;
+    }
+
+    const oversizedFile = selectedFiles.find((file) => file.size > MAX_IMAGE_SIZE_BYTES);
+    if (oversizedFile) {
+      toast.error(`${oversizedFile.name} is too large. Max size is ${MAX_IMAGE_SIZE_MB}MB.`);
+      return;
+    }
+
     setUploading(true);
     try {
       const formData = new FormData();
-      Array.from(files).forEach(f => formData.append('images', f));
+      selectedFiles.forEach(f => formData.append('images', f));
       const res = await uploadAPI.images(formData);
       const newImgs = res.data.images;
       onChange([...images, ...newImgs]);
       toast.success(`${newImgs.length} image(s) uploaded!`);
-    } catch {
-      toast.error('Upload failed. Max 5MB per image, images only.');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
     } finally {
       setUploading(false);
     }
@@ -91,7 +118,7 @@ function ImageUploader({ images = [], onChange, productId }) {
             </div>
             <div>
               <p className="text-sm font-semibold text-gray-700">Click or drag images here</p>
-              <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP up to 5MB each · Max 5 images</p>
+              <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP up to 10MB each · Max 5 images</p>
             </div>
           </div>
         )}

@@ -12,6 +12,14 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem(ENV.authTokenKey);
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    if (typeof config.headers.delete === 'function') {
+      config.headers.delete('Content-Type');
+    } else {
+      delete config.headers['Content-Type'];
+      delete config.headers['content-type'];
+    }
+  }
   return config;
 }, (error) => Promise.reject(error));
 
@@ -117,16 +125,25 @@ export const employeeAPI = {
   getById: (id) => api.get(`/employees/${id}`),
   create: (data) => api.post('/employees', data),
   createWithFile: (formData) =>
-    api.post('/employees', formData, {}),
+    api.post('/employees', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    }),
   update: (id, data) => api.patch(`/employees/${id}`, data),
   updateWithFile: (id, formData) =>
-    api.patch(`/employees/${id}`, formData, {}),
+    api.patch(`/employees/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
+    }),
   terminate: (id) => api.patch(`/employees/${id}/terminate`),
   remove: (id) => api.delete(`/employees/${id}`),
 };
 
 export const uploadAPI = {
-  images: (formData) => api.post('/upload', formData, {}),
+  images: (formData) => api.post('/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000,
+  }),
 };
 
 export const musterAPI = {
