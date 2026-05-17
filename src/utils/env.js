@@ -8,8 +8,17 @@ const isLocalhost = isBrowser && ['localhost', '127.0.0.1'].includes(window.loca
 const liveBackendOrigin = 'https://aditri-backend-2.onrender.com';
 const localBackendOrigin = 'http://localhost:10000';
 
+const isLoopbackUrl = (value) => {
+  try {
+    const hostname = new URL(value).hostname;
+    return ['localhost', '127.0.0.1'].includes(hostname);
+  } catch {
+    return false;
+  }
+};
+
 const resolvePublicUrl = (value, localPath, livePath) => {
-  if (value && value !== 'auto') return value;
+  if (value && value !== 'auto' && (isLocalhost || !isLoopbackUrl(value))) return value;
   const origin = isLocalhost ? localBackendOrigin : liveBackendOrigin;
   return `${origin}${isLocalhost ? localPath : livePath}`;
 };
