@@ -47,11 +47,11 @@ export const getErrorMessage = (error) => {
 
   if (error.response) {
     const serverMessage = error.response?.data?.message || error.response?.data?.errors?.[0]?.msg || error.response?.statusText;
-    if (error.response.status >= 500) {
-      return 'Unable to connect to the server. Please check your connection or try again later.';
-    }
     if (typeof serverMessage === 'string' && serverMessage.trim()) {
       return serverMessage;
+    }
+    if (error.response.status >= 500) {
+      return 'Unable to connect to the server. Please check your connection or try again later.';
     }
     return `Request failed with status ${error.response.status}. Please try again.`;
   }
