@@ -17,8 +17,20 @@ const isLoopbackUrl = (value) => {
   }
 };
 
+const isAbsoluteHttpUrl = (value) => /^https?:\/\//i.test(value || '');
+
 const resolvePublicUrl = (value, localPath, livePath) => {
-  if (value && value !== 'auto' && (isLocalhost || !isLoopbackUrl(value))) return value;
+  const trimmed = value?.trim();
+  if (trimmed && trimmed !== 'auto') {
+    if (isAbsoluteHttpUrl(trimmed) && (isLocalhost || !isLoopbackUrl(trimmed))) {
+      return trimmed.replace(/\/$/, '');
+    }
+
+    if (isLocalhost && trimmed.startsWith('/')) {
+      return `${localBackendOrigin}${trimmed}`;
+    }
+  }
+
   const origin = isLocalhost ? localBackendOrigin : liveBackendOrigin;
   return `${origin}${isLocalhost ? localPath : livePath}`;
 };

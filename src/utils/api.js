@@ -142,10 +142,7 @@ export const employeeAPI = {
 };
 
 export const uploadAPI = {
-  images: (formData) => api.post('/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-    timeout: 60000,
-  }),
+  images: (formData) => api.post('/upload', formData, { timeout: 60000 }),
 };
 
 export const musterAPI = {
