@@ -9,12 +9,13 @@ import { authAPI, orderAPI } from '../utils/api';
 import { getFirebaseAuth } from '../config/firebase';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { getGstRate } from '../utils/cartTotals';
 import toast from 'react-hot-toast';
 
 const TEST_OTP_PHONE = '9999999999';
 
 export function Checkout() {
-  const { items, subtotal, clearCart, removeItem } = useCart();
+  const { items, subtotal, tax, shipping, total, gstLabel, clearCart, removeItem } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm();
@@ -25,9 +26,6 @@ export function Checkout() {
   const [phoneVerificationToken, setPhoneVerificationToken] = useState('');
   const [otpExpiresAt, setOtpExpiresAt] = useState(0);
   const [otpSecondsLeft, setOtpSecondsLeft] = useState(0);
-  const tax = Math.round(subtotal * 0.18);
-  const shipping = subtotal > 10000 ? 0 : 200;
-  const total = subtotal + tax + shipping;
   const deliveryPhone = watch('phone', '');
   const otp = watch('otp', '');
   const isPhoneValid = /^\d{10}$/.test(deliveryPhone || '');
@@ -318,7 +316,7 @@ export function Checkout() {
             <div className="space-y-3 mb-5 max-h-60 overflow-y-auto">
               {items.map(i => (
                 <div key={i._id} className="flex justify-between text-sm">
-                  <span className="text-gray-700 truncate flex-1 mr-2">{i.name} ×{i.qty}</span>
+                  <span className="text-gray-700 truncate flex-1 mr-2">{i.name} ×{i.qty} <span className="text-gray-400">GST {getGstRate(i)}%</span></span>
                   <span className="font-medium flex-shrink-0">₹{((i.discountPrice || i.price) * i.qty).toLocaleString('en-IN')}</span>
                 </div>
               ))}
@@ -326,7 +324,7 @@ export function Checkout() {
             <hr className="border-gray-100 mb-4" />
             <div className="space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-gray-600">Subtotal</span><span>₹{subtotal.toLocaleString('en-IN')}</span></div>
-              <div className="flex justify-between"><span className="text-gray-600">GST (18%)</span><span>₹{tax.toLocaleString('en-IN')}</span></div>
+              <div className="flex justify-between"><span className="text-gray-600">{gstLabel}</span><span>₹{tax.toLocaleString('en-IN')}</span></div>
               <div className="flex justify-between"><span className="text-gray-600">Shipping</span><span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span></div>
               <hr className="border-gray-100" />
               <div className="flex justify-between font-bold text-base"><span>Total</span><span>₹{total.toLocaleString('en-IN')}</span></div>

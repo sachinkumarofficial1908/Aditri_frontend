@@ -47,6 +47,14 @@ export const AuthProvider = ({ children }) => {
     return userData;
   }, []);
 
+  const updateProfile = useCallback(async (data) => {
+    const res = await authAPI.updateProfile(data);
+    const userData = res.data.user;
+    localStorage.setItem(ENV.authUserKey, JSON.stringify(userData));
+    setUser(userData);
+    return userData;
+  }, []);
+
   const logout = useCallback(async () => {
     try { await authAPI.logout(); } catch {}
     localStorage.removeItem(ENV.authTokenKey);
@@ -70,6 +78,7 @@ export const AuthProvider = ({ children }) => {
       login,
       register,
       completeOAuthLogin,
+      updateProfile,
       logout,
       isAdmin,
       isSupervisor,

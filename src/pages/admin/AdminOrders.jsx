@@ -75,7 +75,10 @@ export function AdminOrders() {
                       <p className="text-xs text-gray-400">{o.user?.email || o.guestInfo?.email}</p>
                     </td>
                     <td className="px-5 py-4 text-sm text-gray-700">{o.items?.length} item(s)</td>
-                    <td className="px-5 py-4 text-sm font-bold text-gray-900">₹{o.total?.toLocaleString('en-IN')}</td>
+                    <td className="px-5 py-4">
+                      <p className="text-sm font-bold text-gray-900">₹{o.total?.toLocaleString('en-IN')}</p>
+                      <p className="text-xs text-gray-400">GST: ₹{(o.tax || 0).toLocaleString('en-IN')}</p>
+                    </td>
                     <td className="px-5 py-4">
                       <span className={`badge text-xs ${STATUS_COLORS[o.orderStatus]}`}>{o.orderStatus}</span>
                     </td>

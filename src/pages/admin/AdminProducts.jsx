@@ -29,6 +29,7 @@ const MAX_IMAGE_SIZE_MB = 10;
 const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+const DEFAULT_GST_RATE = 18;
 
 // ─── Image Uploader Component ─────────────────────────────────────────────────
 function ImageUploader({ images = [], onChange, productId }) {
@@ -173,7 +174,7 @@ function ImageUploader({ images = [], onChange, productId }) {
 function ProductForm({ initial, onSave, onClose }) {
   const [form, setForm] = useState({
     name: '', description: '', shortDescription: '',
-    price: '', discountPrice: '',
+    price: '', discountPrice: '', gstRate: DEFAULT_GST_RATE,
     category: 'Electrical', subcategory: 'Electrical & Electronics',
     stock: '', unit: 'piece', minOrderQty: 1,
     brand: '', sku: '',
@@ -182,6 +183,7 @@ function ProductForm({ initial, onSave, onClose }) {
     specifications: [],
     ...(initial ? {
       ...initial,
+      gstRate: initial.gstRate ?? DEFAULT_GST_RATE,
       tags: Array.isArray(initial.tags) ? initial.tags.join(', ') : '',
       images: initial.images || [],
       specifications: initial.specifications || [],
@@ -209,6 +211,7 @@ function ProductForm({ initial, onSave, onClose }) {
       ...form,
       price: parseFloat(form.price) || 0,
       discountPrice: parseFloat(form.discountPrice) || 0,
+      gstRate: parseFloat(form.gstRate) || 0,
       stock: parseInt(form.stock) || 0,
       minOrderQty: parseInt(form.minOrderQty) || 1,
       tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
@@ -362,7 +365,7 @@ function ProductForm({ initial, onSave, onClose }) {
             {/* ── TAB: Pricing & Stock ── */}
             {activeTab === 'pricing' && (
               <div className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-3 gap-4">
                   <div>
                     <label className="label">Selling Price (₹) *</label>
                     <div className="relative">
@@ -391,6 +394,19 @@ function ProductForm({ initial, onSave, onClose }) {
                         {Math.round(((parseFloat(form.price) - parseFloat(form.discountPrice)) / parseFloat(form.price)) * 100)}% discount applied
                       </p>
                     )}
+                  </div>
+                  <div>
+                    <label className="label">GST (%)</label>
+                    <div className="relative">
+                      <input
+                        type="number" value={form.gstRate}
+                        onChange={e => set('gstRate', e.target.value)}
+                        className="input-field pr-8" min="0" max="100" step="0.01"
+                        placeholder="18"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">Default GST is 18%</p>
                   </div>
                 </div>
 
@@ -437,6 +453,9 @@ function ProductForm({ initial, onSave, onClose }) {
                       )}
                       <span className="text-sm text-gray-500">per {form.unit || 'piece'}</span>
                     </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      GST {parseFloat(form.gstRate) || 0}% will be added in cart and bill.
+                    </p>
                   </div>
                 )}
               </div>
@@ -664,7 +683,7 @@ export default function AdminProducts() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Product', 'Category / Sub', 'Price', 'Stock', 'Featured', 'Images', 'Actions'].map(h => (
+                  {['Product', 'Category / Sub', 'Price', 'GST', 'Stock', 'Featured', 'Images', 'Actions'].map(h => (
                     <th key={h} className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider px-5 py-4">{h}</th>
                   ))}
                 </tr>
@@ -672,7 +691,7 @@ export default function AdminProducts() {
               <tbody className="divide-y divide-gray-50">
                 {isLoading && Array.from({ length: 8 }).map((_, i) => (
                   <tr key={i}>
-                    {Array.from({ length: 7 }).map((_, j) => (
+                    {Array.from({ length: 8 }).map((_, j) => (
                       <td key={j} className="px-5 py-4">
                         <div className="h-4 bg-gray-100 rounded animate-pulse" />
                       </td>
@@ -722,6 +741,11 @@ export default function AdminProducts() {
                         <p className="text-xs text-gray-400 line-through">₹{p.price.toLocaleString('en-IN')}</p>
                       )}
                       <p className="text-xs text-gray-400">/{p.unit}</p>
+                    </td>
+
+                    {/* GST */}
+                    <td className="px-5 py-4">
+                      <span className="badge bg-blue-50 text-blue-700 text-xs">{p.gstRate ?? DEFAULT_GST_RATE}%</span>
                     </td>
 
                     {/* Stock */}

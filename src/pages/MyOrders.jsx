@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Package, Clock, CheckCircle, Truck, XCircle, ShoppingBag } from 'lucide-react';
 import { orderAPI } from '../utils/api';
 import { Link } from 'react-router-dom';
+import { getGstRate } from '../utils/cartTotals';
 
 const STATUS_ICON = {
   pending: Clock, confirmed: CheckCircle, processing: Package,
@@ -16,6 +17,12 @@ const STATUS_COLOR = {
   shipped: 'text-indigo-600 bg-indigo-50',
   delivered: 'text-green-600 bg-green-50',
   cancelled: 'text-red-600 bg-red-50',
+};
+
+const getOrderItemGstAmount = (item) => {
+  const storedAmount = Number(item.gstAmount);
+  if (Number.isFinite(storedAmount) && storedAmount > 0) return storedAmount;
+  return Math.round(((item.price || 0) * (item.qty || 0) * getGstRate(item)) / 100);
 };
 
 export default function MyOrders() {
@@ -69,12 +76,29 @@ export default function MyOrders() {
                     <div className="space-y-2 mb-4">
                       {order.items?.map((item) => (
                         <div key={item._id} className="flex items-center justify-between text-sm">
-                          <span className="text-gray-700">{item.name} <span className="text-gray-400">×{item.qty}</span></span>
+                          <div>
+                            <span className="text-gray-700">{item.name} <span className="text-gray-400">×{item.qty}</span></span>
+                            <p className="text-xs text-gray-400">GST {getGstRate(item)}%: ₹{getOrderItemGstAmount(item).toLocaleString('en-IN')}</p>
+                          </div>
                           <span className="font-medium">₹{(item.price * item.qty).toLocaleString('en-IN')}</span>
                         </div>
                       ))}
                     </div>
-                    <div className="flex items-center justify-between text-xs text-gray-500 pt-3 border-t border-gray-100">
+                    <div className="space-y-1 text-xs text-gray-500 pt-3 border-t border-gray-100">
+                      <div className="flex justify-between">
+                        <span>Subtotal</span>
+                        <span>₹{order.subtotal?.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>GST</span>
+                        <span>₹{order.tax?.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Shipping</span>
+                        <span>{order.shippingCost === 0 ? 'FREE' : `₹${order.shippingCost?.toLocaleString('en-IN')}`}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500 pt-3 mt-3 border-t border-gray-100">
                       <span>📍 {order.shippingAddress?.city}, {order.shippingAddress?.state}</span>
                       <span className={`font-medium ${order.paymentStatus === 'paid' ? 'text-green-600' : 'text-yellow-600'}`}>
                         Payment: {order.paymentStatus}

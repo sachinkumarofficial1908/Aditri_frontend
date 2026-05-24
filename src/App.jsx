@@ -6,6 +6,7 @@ import { CartProvider } from './context/CartContext';
 import { SalaryProvider } from './context/SalaryContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import AiHelpChat from './components/AiHelpChat';
 import Loader from './components/common/Loader';
 import ScrollToTop from './components/common/ScrollToTop';
 
@@ -21,6 +22,9 @@ const Checkout = lazy(() => import('./pages/Checkout'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const Profile = lazy(() => import('./pages/Profile'));
 const OAuthCallback = lazy(() => import('./pages/OAuthCallback'));
 const MyOrders = lazy(() => import('./pages/MyOrders'));
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
@@ -73,6 +77,7 @@ const PublicLayout = ({ children }) => (
     <Navbar />
     <main className="flex-1">{children}</main>
     <Footer />
+    <AiHelpChat />
   </div>
 );
 
@@ -96,8 +101,11 @@ function AppRoutes() {
         <Route path="/oauth/callback" element={<OAuthCallback />} />
         <Route path="/login" element={<GuestRoute><PublicLayout><Login /></PublicLayout></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><PublicLayout><Register /></PublicLayout></GuestRoute>} />
+        <Route path="/forgot-password" element={<GuestRoute><PublicLayout><ForgotPassword /></PublicLayout></GuestRoute>} />
+        <Route path="/reset-password/:token" element={<GuestRoute><PublicLayout><ResetPassword /></PublicLayout></GuestRoute>} />
 
         {/* Protected user routes */}
+        <Route path="/profile" element={<ProtectedRoute><PublicLayout><Profile /></PublicLayout></ProtectedRoute>} />
         <Route path="/checkout" element={<ProtectedRoute><PublicLayout><Checkout /></PublicLayout></ProtectedRoute>} />
         <Route path="/my-orders" element={<ProtectedRoute><PublicLayout><MyOrders /></PublicLayout></ProtectedRoute>} />
 

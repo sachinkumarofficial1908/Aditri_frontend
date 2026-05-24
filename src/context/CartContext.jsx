@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { ENV } from '../utils/env';
+import { calculateCartTotals } from '../utils/cartTotals';
 
 const CartContext = createContext(null);
 
@@ -47,11 +48,11 @@ export const CartProvider = ({ children }) => {
   const updateQty = (id, qty) => dispatch({ type: 'UPDATE_QTY', payload: { id, qty } });
   const clearCart = () => dispatch({ type: 'CLEAR' });
 
-  const subtotal = state.items.reduce((sum, i) => sum + (i.discountPrice || i.price) * i.qty, 0);
+  const totals = calculateCartTotals(state.items);
   const itemCount = state.items.reduce((sum, i) => sum + i.qty, 0);
 
   return (
-    <CartContext.Provider value={{ items: state.items, addItem, removeItem, updateQty, clearCart, subtotal, itemCount }}>
+    <CartContext.Provider value={{ items: state.items, addItem, removeItem, updateQty, clearCart, itemCount, ...totals }}>
       {children}
     </CartContext.Provider>
   );

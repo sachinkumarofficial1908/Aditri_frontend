@@ -42,7 +42,7 @@ export const getErrorMessage = (error) => {
   if (!error) return 'Something went wrong. Please try again.';
 
   if (error.response) {
-    const serverMessage = error.response?.data?.message || error.response?.statusText;
+    const serverMessage = error.response?.data?.message || error.response?.data?.errors?.[0]?.msg || error.response?.statusText;
     if (error.response.status >= 500) {
       return 'Unable to connect to the server. Please check your connection or try again later.';
     }
@@ -67,6 +67,8 @@ export const authAPI = {
   sendRegisterEmailOtp: (email) => api.post('/auth/register/email-otp/send', { email }),
   verifyRegisterEmailOtp: (data) => api.post('/auth/register/email-otp/verify', data),
   login: (data) => api.post('/auth/login', data),
+  forgotPassword: (data) => api.post('/auth/forgot-password', data),
+  resetPassword: (token, data) => api.put(`/auth/reset-password/${token}`, data),
   getGoogleOAuthUrl: ({ mode = 'login', redirect = '/' } = {}) => {
     const baseUrl = ENV.apiBaseUrl.replace(/\/$/, '');
     const url = new URL(`${baseUrl}/auth/google`, window.location.origin);

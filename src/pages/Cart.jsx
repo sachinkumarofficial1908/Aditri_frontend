@@ -4,12 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, Package } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { resolveImageUrl } from '../utils/imageUrl';
+import { getGstRate } from '../utils/cartTotals';
 
 export default function Cart() {
-  const { items, removeItem, updateQty, subtotal, clearCart } = useCart();
-  const tax = Math.round(subtotal * 0.18);
-  const shipping = subtotal > 10000 ? 0 : 200;
-  const total = subtotal + tax + shipping;
+  const { items, removeItem, updateQty, subtotal, tax, shipping, total, gstLabel, clearCart } = useCart();
 
   if (items.length === 0) {
     return (
@@ -46,7 +44,7 @@ export default function Cart() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 text-sm mb-1 truncate">{item.name}</h3>
-                    <p className="text-xs text-gray-500 mb-3">{item.category} · per {item.unit}</p>
+                    <p className="text-xs text-gray-500 mb-3">{item.category} · per {item.unit} · GST {getGstRate(item)}%</p>
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <button onClick={() => updateQty(item._id, item.qty - 1)}
@@ -79,7 +77,7 @@ export default function Cart() {
               <h2 className="font-display font-bold text-xl text-gray-900 mb-5">Order Summary</h2>
               <div className="space-y-3 text-sm mb-5">
                 <div className="flex justify-between"><span className="text-gray-600">Subtotal</span><span className="font-medium">₹{subtotal.toLocaleString('en-IN')}</span></div>
-                <div className="flex justify-between"><span className="text-gray-600">GST (18%)</span><span className="font-medium">₹{tax.toLocaleString('en-IN')}</span></div>
+                <div className="flex justify-between"><span className="text-gray-600">{gstLabel}</span><span className="font-medium">₹{tax.toLocaleString('en-IN')}</span></div>
                 <div className="flex justify-between"><span className="text-gray-600">Shipping</span>
                   <span className={shipping === 0 ? 'text-green-600 font-medium' : 'font-medium'}>
                     {shipping === 0 ? 'FREE' : `₹${shipping}`}
