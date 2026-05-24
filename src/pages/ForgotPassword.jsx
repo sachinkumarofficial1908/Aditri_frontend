@@ -8,10 +8,12 @@ import { authAPI, getErrorMessage } from '../utils/api';
 
 export default function ForgotPassword() {
   const [sent, setSent] = useState(false);
+  const [sendError, setSendError] = useState('');
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
   const onSubmit = async (data) => {
     try {
+      setSendError('');
       await authAPI.forgotPassword({
         email: data.email,
         clientUrl: window.location.origin,
@@ -19,7 +21,9 @@ export default function ForgotPassword() {
       setSent(true);
       toast.success('Password reset instructions sent.');
     } catch (err) {
-      toast.error(getErrorMessage(err));
+      const message = getErrorMessage(err);
+      setSendError(message);
+      toast.error(message);
     }
   };
 
@@ -79,6 +83,11 @@ export default function ForgotPassword() {
               >
                 {isSubmitting ? 'Sending...' : <><Send size={18} /> Send Reset Link</>}
               </motion.button>
+              {sendError && (
+                <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {sendError}
+                </p>
+              )}
             </form>
           )}
 

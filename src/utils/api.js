@@ -41,6 +41,10 @@ api.interceptors.response.use(
 export const getErrorMessage = (error) => {
   if (!error) return 'Something went wrong. Please try again.';
 
+  if (error.code === 'ECONNABORTED' || /timeout/i.test(error.message || '')) {
+    return 'The request timed out. Please try again in a moment.';
+  }
+
   if (error.response) {
     const serverMessage = error.response?.data?.message || error.response?.data?.errors?.[0]?.msg || error.response?.statusText;
     if (error.response.status >= 500) {
@@ -67,7 +71,7 @@ export const authAPI = {
   sendRegisterEmailOtp: (email) => api.post('/auth/register/email-otp/send', { email }),
   verifyRegisterEmailOtp: (data) => api.post('/auth/register/email-otp/verify', data),
   login: (data) => api.post('/auth/login', data),
-  forgotPassword: (data) => api.post('/auth/forgot-password', data),
+  forgotPassword: (data) => api.post('/auth/forgot-password', data, { timeout: 20000 }),
   resetPassword: (token, data) => api.put(`/auth/reset-password/${token}`, data),
   getGoogleOAuthUrl: ({ mode = 'login', redirect = '/' } = {}) => {
     const baseUrl = ENV.apiBaseUrl.replace(/\/$/, '');
