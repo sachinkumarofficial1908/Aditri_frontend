@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { Plus, Trash2, CheckCircle, UserCheck, XCircle, ArrowLeft, Upload, X, Download, FileSpreadsheet } from 'lucide-react';
+import { Plus, Trash2, CheckCircle, UserCheck, XCircle, ArrowLeft, Upload, X, Download, FileSpreadsheet, MoreHorizontal } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { employeeAPI } from '../../utils/api';
 import { resolveImageUrl } from '../../utils/imageUrl';
@@ -53,11 +53,13 @@ const fieldLabels = {
   dailyWagesRate: 'Daily Wages Rate',
   govDailyWage: 'Daily Wage as per Government',
   clmsId: 'CLMS ID',
+  supervisor_id: 'Supervision Under',
   photo: 'Photo',
 };
 
 const gradeOptions = ['Skilled', 'Semi-skilled', 'Unskilled'];
 const statusOptions = ['Valid', 'Terminate', 'Debarred'];
+const pageSizeOptions = [10, 25, 50, 100];
 
 const exportFields = [
   { key: 'employeeId', label: 'Employee ID' },
@@ -83,6 +85,7 @@ const exportFields = [
   { key: 'dailyWagesRate', label: 'Daily Wages Rate' },
   { key: 'govDailyWage', label: 'Daily Wage as per Government' },
   { key: 'clmsId', label: 'CLMS ID' },
+  { key: 'supervisor_id', label: 'Supervision Under' },
   { key: 'createdAt', label: 'Created Date', type: 'date' },
 ];
 
@@ -97,7 +100,22 @@ const defaultExportFieldKeys = [
   'dateOfJoining',
   'dailyWagesRate',
   'clmsId',
+  'supervisor_id',
 ];
+
+const getSupervisorId = (supervisor) => {
+  if (!supervisor) return '';
+  if (typeof supervisor === 'string') return supervisor;
+  return supervisor._id || supervisor.id || '';
+};
+
+const getSupervisorLabel = (supervisor) => {
+  if (!supervisor) return '';
+  if (typeof supervisor === 'string') return supervisor;
+  return supervisor.name || supervisor.email
+    ? `${supervisor.name || supervisor.email}${supervisor.name && supervisor.email ? ` (${supervisor.email})` : ''}`
+    : getSupervisorId(supervisor);
+};
 
 export default function AdminEmployees() {
   const qc = useQueryClient();
@@ -117,28 +135,68 @@ export default function AdminEmployees() {
   const [selectedExportFields, setSelectedExportFields] = useState(defaultExportFieldKeys);
   const [isExporting, setIsExporting] = useState(false);
   const [showExportPanel, setShowExportPanel] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-employees', searchTerm, selectedDesignation, selectedGrade, selectedStatus],
+    queryKey: ['admin-employees', searchTerm, selectedDesignation, selectedGrade, selectedStatus, page, pageSize],
     queryFn: () =>
       employeeAPI
         .getAll({
-          limit: 100,
+          page,
+          limit: pageSize,
           search: searchTerm || undefined,
+          designation: selectedDesignation || undefined,
+          gradeOfWork: selectedGrade || undefined,
           status: selectedStatus || undefined,
         })
         .then((res) => res.data),
   });
 
-  // Filter employees locally by designation and grade
-  const filteredEmployees = data?.employees?.filter((emp) => {
-    const matchesDesignation = !selectedDesignation || emp.designation === selectedDesignation;
-    const matchesGrade = !selectedGrade || emp.gradeOfWork === selectedGrade;
-    return matchesDesignation && matchesGrade;
-  }) || [];
+  const { data: filterOptionsData } = useQuery({
+    queryKey: ['admin-employees-filter-options'],
+    queryFn: () =>
+      employeeAPI
+        .getAll({ limit: 10000 })
+        .then((res) => res.data),
+  });
+
+  const { data: supervisorsData, isLoading: isLoadingSupervisors } = useQuery({
+    queryKey: ['employee-supervisors'],
+    queryFn: () => employeeAPI.getSupervisors().then((res) => res.data),
+  });
+
+  const supervisors = supervisorsData?.supervisors || [];
+  const filteredEmployees = data?.employees || [];
+  const totalEmployees = data?.total || 0;
+  const totalPages = Math.max(data?.totalPages || Math.ceil(totalEmployees / pageSize) || 1, 1);
+  const currentPage = Math.min(page, totalPages);
+  const pageStart = totalEmployees === 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
+  const pageEnd = Math.min(currentPage * pageSize, totalEmployees);
+  const pageWindowStart = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
+  const pageNumbers = Array.from(
+    { length: Math.min(5, totalPages) },
+    (_, index) => pageWindowStart + index
+  );
+  const designationOptions = [...new Set((filterOptionsData?.employees || [])
+    .map((emp) => emp.designation)
+    .filter(Boolean))];
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selectedDesignation, selectedGrade, selectedStatus, pageSize]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
 
   const formatExportValue = (employee, field) => {
     const value = employee[field.key];
+    if (field.key === 'supervisor_id') {
+      return getSupervisorLabel(value);
+    }
     if (field.type === 'date') {
       return value ? new Date(value).toLocaleDateString('en-IN') : '';
     }
@@ -164,14 +222,12 @@ export default function AdminEmployees() {
       const response = await employeeAPI.getAll({
         limit: 10000,
         search: searchTerm || undefined,
+        designation: selectedDesignation || undefined,
+        gradeOfWork: selectedGrade || undefined,
         status: selectedStatus || undefined,
       });
 
-      const exportEmployees = (response.data?.employees || []).filter((emp) => {
-        const matchesDesignation = !selectedDesignation || emp.designation === selectedDesignation;
-        const matchesGrade = !selectedGrade || emp.gradeOfWork === selectedGrade;
-        return matchesDesignation && matchesGrade;
-      });
+      const exportEmployees = response.data?.employees || [];
 
       if (!exportEmployees.length) {
         toast.error('No employees available to export');
@@ -307,6 +363,7 @@ export default function AdminEmployees() {
       dailyWagesRate: '',
       govDailyWage: '',
       clmsId: '',
+      supervisor_id: '',
     },
   });
 
@@ -346,6 +403,7 @@ export default function AdminEmployees() {
       ...employee,
       dateOfJoining: employee.dateOfJoining ? new Date(employee.dateOfJoining).toISOString().slice(0, 10) : '',
       dob: employee.dob ? new Date(employee.dob).toISOString().slice(0, 10) : '',
+      supervisor_id: getSupervisorId(employee.supervisor_id),
     };
 
     Object.keys(formattedEmployee).forEach((key) => {
@@ -571,6 +629,36 @@ export default function AdminEmployees() {
               {Object.entries(fieldLabels)
                 .filter(([key]) => key !== 'photo')
                 .map(([name, label]) => {
+                  if (name === 'supervisor_id') {
+                    return (
+                      <div key={name} className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          {label}
+                          {requiredFields.includes(name) && <span className="text-red-500">*</span>}
+                        </label>
+                        <select
+                          {...register(name, { required: requiredFields.includes(name) })}
+                          disabled={isLoadingSupervisors}
+                          className={`w-full rounded-2xl border px-4 py-3 text-sm focus:outline-none transition disabled:cursor-not-allowed disabled:bg-gray-100 ${
+                            backendErrors[name] || errors[name]
+                              ? 'border-red-500 bg-red-50 focus:border-red-500'
+                              : 'border-gray-200 bg-gray-50 focus:border-primary-500 focus:bg-white'
+                          }`}
+                        >
+                          <option value="">{isLoadingSupervisors ? 'Loading supervisors...' : 'Select supervisor'}</option>
+                          {supervisors.map((supervisor) => (
+                            <option key={supervisor._id} value={supervisor._id}>
+                              {getSupervisorLabel(supervisor)}
+                            </option>
+                          ))}
+                        </select>
+                        {(errors[name] || backendErrors[name]) && (
+                          <p className="text-xs text-red-500">{backendErrors[name] || `${label} is required`}</p>
+                        )}
+                      </div>
+                    );
+                  }
+
                   if (name === 'gradeOfWork') {
                     // Dropdown for Grade of Work
                     return (
@@ -680,7 +768,10 @@ export default function AdminEmployees() {
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Employee Records</h2>
-                <p className="text-sm text-gray-500">{filteredEmployees.length || 0} employees found.</p>
+                <p className="text-sm text-gray-500">
+                  {totalEmployees} employees found
+                  {totalEmployees > 0 ? `, showing ${pageStart}-${pageEnd}` : ''}.
+                </p>
               </div>
               <button
                 type="button"
@@ -774,7 +865,7 @@ export default function AdminEmployees() {
                   className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-primary-500 focus:bg-white focus:outline-none"
                 >
                   <option value="">All Designations</option>
-                  {[...new Set(data?.employees?.map((emp) => emp.designation) || [])].map((designation) => (
+                  {designationOptions.map((designation) => (
                     <option key={designation} value={designation}>
                       {designation}
                     </option>
@@ -816,11 +907,11 @@ export default function AdminEmployees() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left text-sm text-gray-600">
+          <div className="overflow-x-auto scrollbar-hide">
+            <table className="w-full min-w-[1000px] text-left text-sm text-gray-600">
               <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
                 <tr>
-                  {['Name', 'Phone', 'Site', 'Designation', 'Status', 'Joined', 'Actions'].map((heading) => (
+                  {['Name', 'Phone', 'Site', 'Designation', 'Supervisor', 'Status', 'Joined', 'Actions'].map((heading) => (
                     <th key={heading} className="px-5 py-4">{heading}</th>
                   ))}
                 </tr>
@@ -828,14 +919,14 @@ export default function AdminEmployees() {
               <tbody className="divide-y divide-gray-100">
                 {isLoading && Array.from({ length: 6 }).map((_, index) => (
                   <tr key={index} className="animate-pulse">
-                    {Array.from({ length: 7 }).map((_, cell) => (
+                    {Array.from({ length: 8 }).map((_, cell) => (
                       <td key={cell} className="px-5 py-4"><div className="h-4 w-24 rounded-full bg-gray-200" /></td>
                     ))}
                   </tr>
                 ))}
                 {!isLoading && filteredEmployees.length === 0 && (
                   <tr>
-                    <td colSpan="7" className="px-5 py-8 text-center text-gray-500">
+                    <td colSpan="8" className="px-5 py-8 text-center text-gray-500">
                       No employees found. Try adjusting your search or filters.
                     </td>
                   </tr>
@@ -846,6 +937,7 @@ export default function AdminEmployees() {
                     <td className="px-5 py-4">{employee.phone || '—'}</td>
                     <td className="px-5 py-4">{employee.siteName || '—'}</td>
                     <td className="px-5 py-4">{employee.designation || '—'}</td>
+                    <td className="px-5 py-4">{getSupervisorLabel(employee.supervisor_id) || '—'}</td>
                     <td className="px-5 py-4">
                       <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${getStatusBadgeColor(employee.status)}`}>
                         {employee.status === 'Valid' && <CheckCircle size={14} />}
@@ -855,44 +947,125 @@ export default function AdminEmployees() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-xs text-gray-500">{employee.dateOfJoining ? new Date(employee.dateOfJoining).toLocaleDateString('en-IN') : '—'}</td>
-                    <td className="px-5 py-4 space-x-2">
-                      <button
-                        type="button"
-                        onClick={() => handleViewEmployee(employee)}
-                        className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-700 transition hover:bg-gray-100"
-                      >
-                        View
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleEditEmployee(employee)}
-                        className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setStatusModalEmployee(employee);
-                          setNewStatus(employee.status);
-                        }}
-                        className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
-                      >
-                        <UserCheck size={14} /> Status
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => confirmDelete(employee._id)}
-                        disabled={deleteMutation.isPending}
-                        className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                    <td className="px-5 py-4">
+                      <div className="group relative inline-flex after:absolute after:left-0 after:top-full after:h-3 after:w-full after:content-['']">
+                        <button
+                          type="button"
+                          className="inline-flex h-8 min-w-[78px] items-center justify-center gap-1 rounded-xl border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 shadow-sm transition hover:bg-gray-100 group-hover:border-primary-200 group-hover:text-primary-700"
+                        >
+                          <MoreHorizontal size={14} /> DEVS
+                        </button>
+                        <div className="invisible absolute right-0 top-full z-30 mt-1 flex w-max items-center gap-1.5 rounded-2xl border border-gray-200 bg-white p-2 opacity-0 shadow-lg transition duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                          <button
+                            type="button"
+                            onClick={() => handleViewEmployee(employee)}
+                            className="inline-flex h-8 min-w-[56px] items-center justify-center rounded-xl border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 transition hover:bg-gray-100"
+                          >
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleEditEmployee(employee)}
+                            className="inline-flex h-8 min-w-[52px] items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setStatusModalEmployee(employee);
+                              setNewStatus(employee.status);
+                            }}
+                            className="inline-flex h-8 min-w-[78px] items-center justify-center gap-1 rounded-xl border border-blue-200 bg-blue-50 px-3 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+                          >
+                            <UserCheck size={14} /> Status
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => confirmDelete(employee._id)}
+                            disabled={deleteMutation.isPending}
+                            aria-label={`Delete ${employee.name}`}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-gray-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>Rows</span>
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm font-medium text-gray-700 focus:border-primary-500 focus:outline-none"
+              >
+                {pageSizeOptions.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+              <span>
+                {pageStart}-{pageEnd} of {totalEmployees}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setPage(1)}
+                disabled={currentPage === 1 || isLoading}
+                className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                First
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage((value) => Math.max(value - 1, 1))}
+                disabled={currentPage === 1 || isLoading}
+                className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Prev
+              </button>
+              {pageNumbers.map((pageNumber) => (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  onClick={() => setPage(pageNumber)}
+                  disabled={isLoading}
+                  className={`h-9 min-w-9 rounded-lg border px-3 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                    currentPage === pageNumber
+                      ? 'border-primary-600 bg-primary-600 text-white'
+                      : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {pageNumber}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setPage((value) => Math.min(value + 1, totalPages))}
+                disabled={currentPage === totalPages || isLoading}
+                className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage(totalPages)}
+                disabled={currentPage === totalPages || isLoading}
+                className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Last
+              </button>
+            </div>
           </div>
         </div>
 
@@ -920,6 +1093,7 @@ export default function AdminEmployees() {
                   Designation: viewEmployee.designation,
                   'Grade of Work': viewEmployee.gradeOfWork,
                   'CLMS ID': viewEmployee.clmsId,
+                  'Supervision Under': getSupervisorLabel(viewEmployee.supervisor_id),
                   'Daily Wage Rate': viewEmployee.dailyWagesRate,
                   'Gov Daily Wage': viewEmployee.govDailyWage,
                   Phone: viewEmployee.phone,

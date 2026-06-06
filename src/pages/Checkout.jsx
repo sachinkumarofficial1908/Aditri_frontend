@@ -13,6 +13,28 @@ import { getGstRate } from '../utils/cartTotals';
 import toast from 'react-hot-toast';
 
 const TEST_OTP_PHONE = '9999999999';
+const RAZORPAY_CHECKOUT_URL = 'https://checkout.razorpay.com/v1/checkout.js';
+
+const loadRazorpayCheckout = () => new Promise((resolve, reject) => {
+  if (window.Razorpay) {
+    resolve(true);
+    return;
+  }
+
+  const existingScript = document.querySelector(`script[src="${RAZORPAY_CHECKOUT_URL}"]`);
+  if (existingScript) {
+    existingScript.addEventListener('load', () => resolve(true), { once: true });
+    existingScript.addEventListener('error', () => reject(new Error('Unable to load Razorpay checkout.')), { once: true });
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.src = RAZORPAY_CHECKOUT_URL;
+  script.async = true;
+  script.onload = () => resolve(true);
+  script.onerror = () => reject(new Error('Unable to load Razorpay checkout.'));
+  document.body.appendChild(script);
+});
 
 export function Checkout() {
   const { items, subtotal, tax, shipping, total, gstLabel, clearCart, removeItem } = useCart();
@@ -26,7 +48,9 @@ export function Checkout() {
   const [phoneVerificationToken, setPhoneVerificationToken] = useState('');
   const [otpExpiresAt, setOtpExpiresAt] = useState(0);
   const [otpSecondsLeft, setOtpSecondsLeft] = useState(0);
+  const [creatingPayment, setCreatingPayment] = useState(false);
   const deliveryPhone = watch('phone', '');
+  const paymentMethod = watch('paymentMethod', 'razorpay');
   const otp = watch('otp', '');
   const isPhoneValid = /^\d{10}$/.test(deliveryPhone || '');
   const isTestPhone = deliveryPhone === TEST_OTP_PHONE;
@@ -143,7 +167,70 @@ export function Checkout() {
     },
   });
 
-  const onSubmit = (form) => {
+  const buildOrderPayload = (form) => ({
+    items: items.map(i => ({ product: i._id, qty: i.qty })),
+    shippingAddress: {
+      street: form.street,
+      city: form.city,
+      state: form.state,
+      pincode: form.pincode,
+      phone: form.phone,
+    },
+    phoneVerificationToken,
+    paymentMethod: form.paymentMethod,
+    notes: form.notes,
+  });
+
+  const openRazorpayCheckout = async (orderPayload) => {
+    setCreatingPayment(true);
+    try {
+      await loadRazorpayCheckout();
+      const res = await orderAPI.createPaymentOrder({ ...orderPayload, paymentMethod: 'razorpay' });
+      const { key, razorpayOrder, currency } = res.data;
+
+      const checkout = new window.Razorpay({
+        key,
+        amount: razorpayOrder.amount,
+        currency,
+        name: 'Aditri Constructions Services',
+        description: 'Product order payment',
+        order_id: razorpayOrder.id,
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: orderPayload.shippingAddress.phone,
+        },
+        notes: {
+          source: 'aditri-web',
+        },
+        theme: {
+          color: '#2563eb',
+        },
+        handler: (response) => {
+          mutation.mutate({
+            ...orderPayload,
+            paymentMethod: 'razorpay',
+            razorpay: response,
+          });
+        },
+        modal: {
+          ondismiss: () => toast.error('Payment cancelled. Your order was not placed.'),
+        },
+      });
+
+      checkout.on('payment.failed', (response) => {
+        toast.error(response.error?.description || 'Payment failed. Please try again.');
+      });
+
+      checkout.open();
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Unable to start Razorpay payment.');
+    } finally {
+      setCreatingPayment(false);
+    }
+  };
+
+  const onSubmit = async (form) => {
     if (items.length === 0) {
       toast.error('Your cart is empty.');
       navigate('/cart');
@@ -161,19 +248,13 @@ export function Checkout() {
       return;
     }
 
-    mutation.mutate({
-      items: items.map(i => ({ product: i._id, qty: i.qty })),
-      shippingAddress: {
-        street: form.street,
-        city: form.city,
-        state: form.state,
-        pincode: form.pincode,
-        phone: form.phone,
-      },
-      phoneVerificationToken,
-      paymentMethod: form.paymentMethod,
-      notes: form.notes,
-    });
+    const orderPayload = buildOrderPayload(form);
+    if (form.paymentMethod === 'razorpay') {
+      await openRazorpayCheckout(orderPayload);
+      return;
+    }
+
+    mutation.mutate(orderPayload);
   };
 
   return (
@@ -293,9 +374,14 @@ export function Checkout() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
               <h2 className="font-display font-bold text-lg mb-5">Payment Method</h2>
               <div className="space-y-3">
-                {[{ v: 'cod', l: 'Cash on Delivery' }, { v: 'bank_transfer', l: 'Bank Transfer' }, { v: 'upi', l: 'UPI' }].map(({ v, l }) => (
+                {[
+                  { v: 'razorpay', l: 'Pay Online with Razorpay' },
+                  { v: 'cod', l: 'Cash on Delivery' },
+                  { v: 'bank_transfer', l: 'Bank Transfer' },
+                  { v: 'upi', l: 'UPI' },
+                ].map(({ v, l }) => (
                   <label key={v} className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-primary-400 transition-colors">
-                    <input {...register('paymentMethod')} type="radio" value={v} defaultChecked={v === 'cod'} className="accent-primary-600" />
+                    <input {...register('paymentMethod')} type="radio" value={v} defaultChecked={v === 'razorpay'} className="accent-primary-600" />
                     <span className="text-sm font-medium">{l}</span>
                   </label>
                 ))}
@@ -305,10 +391,12 @@ export function Checkout() {
               <label className="label">Additional Notes</label>
               <textarea {...register('notes')} className="input-field resize-none" rows={3} placeholder="Any special instructions..." />
             </div>
-            <motion.button type="submit" disabled={mutation.isPending || !isPhoneVerified}
+            <motion.button type="submit" disabled={mutation.isPending || creatingPayment || !isPhoneVerified}
               whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
               className="w-full btn-primary py-4 justify-center text-base disabled:cursor-not-allowed disabled:opacity-60">
-              {mutation.isPending ? 'Placing Order...' : `Place Order — ₹${total.toLocaleString('en-IN')}`}
+              {mutation.isPending || creatingPayment
+                ? 'Processing...'
+                : `${paymentMethod === 'razorpay' ? 'Pay & Place Order' : 'Place Order'} — ₹${total.toLocaleString('en-IN')}`}
             </motion.button>
           </form>
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 h-fit sticky top-24">

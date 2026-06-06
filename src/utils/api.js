@@ -95,10 +95,11 @@ export const productAPI = {
   create: (data) => api.post('/products', data),
   update: (id, data) => api.put(`/products/${id}`, data),
   delete: (id) => api.delete(`/products/${id}`),
-  getCategories: () => api.get('/products/categories'),
+  getCategories: () => api.get('/products/meta/categories'),
 };
 
 export const orderAPI = {
+  createPaymentOrder: (data) => api.post('/orders/payment-order', data),
   create: (data) => api.post('/orders', data),
   getMyOrders: () => api.get('/orders/my'),
   getAll: (params) => api.get('/orders', { params }),
@@ -128,6 +129,7 @@ export const adminAPI = {
 
 export const employeeAPI = {
   getAll: (params) => api.get('/employees', { params }),
+  getSupervisors: () => api.get('/employees/supervisors'),
   getById: (id) => api.get(`/employees/${id}`),
   create: (data) => api.post('/employees', data),
   createWithFile: (formData) =>

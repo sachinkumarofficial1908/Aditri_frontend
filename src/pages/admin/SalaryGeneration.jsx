@@ -3,11 +3,22 @@ import { useSalaryContext } from '../../context/SalaryContext';
 import { AdminSidebar } from './Dashboard';
 import Toast from '../../components/common/Toast';
 import Loader from '../../components/common/Loader';
-import BonusConfig from '../../components/salary/BonusConfig';
-import DeductionConfig from '../../components/salary/DeductionConfig';
 import GovSalaryTable from '../../components/salary/GovSalaryTable';
 import CompanySalaryTable from '../../components/salary/CompanySalaryTable';
+import SupervisorSalaryEditor from '../../components/salary/SupervisorSalaryEditor';
 import { getMonthName, DEFAULT_BONUSES, DEFAULT_DEDUCTIONS } from '../../utils/salaryUtils';
+
+const getDefaultSupervisorConfig = () => ({
+  bonusPercentage: DEFAULT_BONUSES[0]?.percentage ?? 8.33,
+  leaveBonusPercentage: DEFAULT_BONUSES[1]?.percentage ?? 6.73,
+  pfPercentage: DEFAULT_DEDUCTIONS.pf_percentage,
+  esicPercentage: DEFAULT_DEDUCTIONS.esic_percentage,
+});
+
+const buildSupervisorBonuses = (config) => ([
+  { name: DEFAULT_BONUSES[0]?.name || 'Bonus', percentage: Number(config.bonusPercentage) || 0 },
+  { name: DEFAULT_BONUSES[1]?.name || 'Leave Bonus', percentage: Number(config.leaveBonusPercentage) || 0 },
+]);
 
 const SalaryGeneration = () => {
   const {
@@ -21,6 +32,9 @@ const SalaryGeneration = () => {
     generateCompanySalary,
     fetchGovSalaries,
     fetchCompanySalaries,
+    updateGovSalary,
+    updateCompanySalary,
+    updateAttendanceEntry,
     downloadGovSalaryExcel,
     downloadCompanySalaryExcel,
     downloadBothSalaryExcel,
@@ -48,6 +62,10 @@ const SalaryGeneration = () => {
   const [generationInProgress, setGenerationInProgress] = useState(false);
   const [processStatus, setProcessStatus] = useState(null);
   const [expandedSupervisor, setExpandedSupervisor] = useState(null);
+  const [salaryViewMode, setSalaryViewMode] = useState('all');
+  const [attendanceDrafts, setAttendanceDrafts] = useState({});
+  const [savingAttendanceId, setSavingAttendanceId] = useState('');
+  const [supervisorSalaryConfigs, setSupervisorSalaryConfigs] = useState({});
 
   const loadProcessStatus = async (selectedMonth = month, selectedYear = year) => {
     try {
@@ -66,6 +84,62 @@ const SalaryGeneration = () => {
   useEffect(() => {
     loadProcessStatus(month, year);
   }, [month, year]);
+
+  useEffect(() => {
+    const drafts = {};
+    const configs = {};
+    (processStatus?.supervisorGroups || []).forEach((group) => {
+      configs[group.supervisorId] = supervisorSalaryConfigs[group.supervisorId] || getDefaultSupervisorConfig();
+      group.entries.forEach((entry) => {
+        drafts[entry.id] = {
+          daysPresent: entry.daysPresent ?? 0,
+          ratePerDay: entry.ratePerDay ?? 0,
+          otAmount: entry.otAmount ?? 0,
+          advance: entry.advance ?? 0,
+        };
+      });
+    });
+    setAttendanceDrafts(drafts);
+    setSupervisorSalaryConfigs(configs);
+  }, [processStatus]);
+
+  const updateSupervisorSalaryConfig = (supervisorId, field, value) => {
+    setSupervisorSalaryConfigs((current) => ({
+      ...current,
+      [supervisorId]: {
+        ...(current[supervisorId] || getDefaultSupervisorConfig()),
+        [field]: value,
+      },
+    }));
+  };
+
+  const updateAttendanceDraft = (id, field, value) => {
+    setAttendanceDrafts((current) => ({
+      ...current,
+      [id]: {
+        ...current[id],
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleSaveAttendanceEntry = async (entry) => {
+    const draft = attendanceDrafts[entry.id];
+    if (!draft) return;
+
+    setSavingAttendanceId(entry.id);
+    try {
+      await updateAttendanceEntry(entry.id, {
+        days_present: Number(draft.daysPresent) || 0,
+        rate_per_day: Number(draft.ratePerDay) || 0,
+        ot_amount: Number(draft.otAmount) || 0,
+        advance: Number(draft.advance) || 0,
+      });
+      await loadProcessStatus(month, year);
+    } finally {
+      setSavingAttendanceId('');
+    }
+  };
 
   const handleCompleteProcess = async () => {
     if (!processStatus?.totalEntries) {
@@ -96,6 +170,30 @@ const SalaryGeneration = () => {
     }));
   };
 
+  const getConfigForSalary = (salary) => (
+    supervisorSalaryConfigs[salary.employee_details?.supervisorId || 'unassigned'] || getDefaultSupervisorConfig()
+  );
+
+  const applySupervisorConfigsToGovSalaries = async (salaries) => {
+    for (const salary of salaries) {
+      const config = getConfigForSalary(salary);
+      await updateGovSalary(salary._id, {
+        bonuses: buildSupervisorBonuses(config),
+        pf_percentage: Number(config.pfPercentage) || 0,
+        esic_percentage: Number(config.esicPercentage) || 0,
+      });
+    }
+  };
+
+  const applySupervisorConfigsToCompanySalaries = async (salaries) => {
+    for (const salary of salaries) {
+      const config = getConfigForSalary(salary);
+      await updateCompanySalary(salary._id, {
+        bonuses: buildSupervisorBonuses(config),
+      });
+    }
+  };
+
   const handleStep2Complete = async () => {
     if (!selectedSalaries.gov && !selectedSalaries.company) {
       alert('Please select at least one salary type to generate');
@@ -106,20 +204,20 @@ const SalaryGeneration = () => {
       setGenerationInProgress(true);
       clearError();
 
-      if (selectedSalaries.gov) {
+      if (selectedSalaries.gov || selectedSalaries.company) {
         await generateGovSalary(month, year);
+        const generatedGovSalaries = await fetchGovSalaries(month, year);
+        await applySupervisorConfigsToGovSalaries(generatedGovSalaries);
+        await fetchGovSalaries(month, year);
       }
 
       if (selectedSalaries.company) {
         await generateCompanySalary(month, year);
-      }
-
-      if (selectedSalaries.gov) {
-        await fetchGovSalaries(month, year);
-      }
-      if (selectedSalaries.company) {
+        const generatedCompanySalaries = await fetchCompanySalaries(month, year);
+        await applySupervisorConfigsToCompanySalaries(generatedCompanySalaries);
         await fetchCompanySalaries(month, year);
       }
+
       setCurrentStep(3);
     } catch (err) {
       // Error handled by context
@@ -133,6 +231,8 @@ const SalaryGeneration = () => {
     setSelectedSalaries({ gov: false, company: false });
     setBonusConfig({ bonuses: DEFAULT_BONUSES });
     setDeductionConfig(DEFAULT_DEDUCTIONS);
+    setSalaryViewMode('all');
+    setSupervisorSalaryConfigs({});
   };
 
   return (
@@ -149,7 +249,7 @@ const SalaryGeneration = () => {
 
         {/* Month/Year Selection */}
         {currentStep === 1 && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6 max-w-4xl">
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6 max-w-6xl">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Select Previous Month & Year</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -226,27 +326,63 @@ const SalaryGeneration = () => {
                         </span>
                       </button>
                       {expandedSupervisor === group.supervisorId && (
-                        <div className="overflow-x-auto border-t border-gray-100">
-                          <table className="w-full min-w-[720px] text-left text-xs">
+                        <div className="overflow-hidden border-t border-gray-100">
+                          <table className="w-full table-fixed text-left text-[11px]">
+                            <colgroup>
+                              <col className="w-[24%]" />
+                              <col className="w-[13%]" />
+                              <col className="w-[11%]" />
+                              <col className="w-[13%]" />
+                              <col className="w-[11%]" />
+                              <col className="w-[13%]" />
+                              <col className="w-[15%]" />
+                            </colgroup>
                             <thead className="bg-gray-50 text-gray-500">
                               <tr>
-                                {['Employee', 'CLMS ID', 'Days', 'Rate', 'OT', 'Advance', 'Source'].map((heading) => (
-                                  <th key={heading} className="px-3 py-2">{heading}</th>
+                                {['Employee', 'CLMS ID', 'Days', 'Rate', 'OT', 'Advance', 'Action'].map((heading) => (
+                                  <th key={heading} className="px-2 py-2 font-semibold">{heading}</th>
                                 ))}
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                              {group.entries.map((entry) => (
-                                <tr key={entry.id}>
-                                  <td className="px-3 py-2 font-medium text-gray-800">{entry.employeeName}</td>
-                                  <td className="px-3 py-2">{entry.clmsId}</td>
-                                  <td className="px-3 py-2">{entry.daysPresent}</td>
-                                  <td className="px-3 py-2">{entry.ratePerDay}</td>
-                                  <td className="px-3 py-2">{entry.otAmount}</td>
-                                  <td className="px-3 py-2">{entry.advance}</td>
-                                  <td className="px-3 py-2 capitalize">{entry.source}</td>
-                                </tr>
-                              ))}
+                              {group.entries.map((entry) => {
+                                const draft = attendanceDrafts[entry.id] || {};
+                                const isLocked = processStatus.isCompleted;
+                                return (
+                                  <tr key={entry.id} className="odd:bg-white even:bg-gray-50">
+                                    <td className="truncate px-2 py-1.5 font-medium text-gray-800" title={entry.employeeName}>{entry.employeeName}</td>
+                                    <td className="truncate px-2 py-1.5 text-gray-700" title={entry.clmsId}>{entry.clmsId}</td>
+                                    {[
+                                      ['daysPresent', 'Days'],
+                                      ['ratePerDay', 'Rate'],
+                                      ['otAmount', 'OT'],
+                                      ['advance', 'Advance'],
+                                    ].map(([field, label]) => (
+                                      <td key={field} className="px-2 py-1.5">
+                                        <input
+                                          type="number"
+                                          step="0.01"
+                                          aria-label={`${label} for ${entry.employeeName}`}
+                                          value={draft[field] ?? ''}
+                                          disabled={isLocked}
+                                          onChange={(event) => updateAttendanceDraft(entry.id, field, event.target.value)}
+                                          className="h-7 w-full rounded border border-gray-300 bg-white px-1.5 text-right text-xs text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-100 disabled:bg-gray-100 disabled:text-gray-500"
+                                        />
+                                      </td>
+                                    ))}
+                                    <td className="px-2 py-1.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSaveAttendanceEntry(entry)}
+                                        disabled={isLocked || Boolean(savingAttendanceId)}
+                                        className="inline-flex h-7 min-w-[64px] items-center justify-center rounded bg-emerald-600 px-2 text-[11px] font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                                      >
+                                        {savingAttendanceId === entry.id ? 'Saving...' : 'Save'}
+                                      </button>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
                             </tbody>
                           </table>
                         </div>
@@ -255,15 +391,49 @@ const SalaryGeneration = () => {
                   ))}
                 </div>
 
-                {!processStatus.isCompleted && (
-                  <button
-                    type="button"
-                    onClick={handleCompleteProcess}
-                    disabled={loading || !processStatus.totalEntries}
-                    className="mt-4 w-full rounded-md bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700 disabled:bg-gray-400"
-                  >
-                    This Month Salary Process Completed
-                  </button>
+                {!processStatus.isCompleted && (processStatus.supervisorGroups || []).length > 0 && (
+                  <div className="mt-5 rounded-lg border border-blue-100 bg-blue-50/60 p-4">
+                    <div className="mb-4">
+                      <h3 className="text-sm font-semibold text-gray-900">Supervisor Wise Salary Rules</h3>
+                      <p className="mt-1 text-xs text-gray-600">
+                        These values will be applied during salary generation for each supervisor group.
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      {(processStatus.supervisorGroups || []).map((group) => {
+                        const config = supervisorSalaryConfigs[group.supervisorId] || getDefaultSupervisorConfig();
+                        return (
+                          <div key={group.supervisorId} className="rounded-lg border border-gray-200 bg-white p-3">
+                            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                              <div>
+                                <p className="text-sm font-semibold text-gray-900">{group.supervisorName}</p>
+                                <p className="text-xs text-gray-500">{group.totalEntries} entries</p>
+                              </div>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                              {[
+                                ['bonusPercentage', 'Bonus %'],
+                                ['leaveBonusPercentage', 'Leave Bonus %'],
+                                ['pfPercentage', 'PF %'],
+                                ['esicPercentage', 'ESIC %'],
+                              ].map(([field, label]) => (
+                                <label key={field} className="text-xs font-semibold text-gray-600">
+                                  {label}
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    value={config[field] ?? ''}
+                                    onChange={(event) => updateSupervisorSalaryConfig(group.supervisorId, field, event.target.value)}
+                                    className="mt-1 h-8 w-full rounded-md border border-gray-300 bg-white px-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-100"
+                                  />
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -330,22 +500,6 @@ const SalaryGeneration = () => {
               </div>
             </div>
 
-            {/* Bonus Configuration */}
-            {selectedSalaries.gov && (
-              <BonusConfig
-                bonusConfig={bonusConfig}
-                setBonusConfig={setBonusConfig}
-              />
-            )}
-
-            {/* Deduction Configuration */}
-            {selectedSalaries.gov && (
-              <DeductionConfig
-                deductionConfig={deductionConfig}
-                setDeductionConfig={setDeductionConfig}
-              />
-            )}
-
             {/* Action Buttons */}
             <div className="flex gap-4 mt-8">
               <button
@@ -398,7 +552,34 @@ const SalaryGeneration = () => {
             )}
 
             {/* Government Salary Table */}
-            {!processStatus?.isCompleted && selectedSalaries.gov && govSalaries.length > 0 && (
+            {!processStatus?.isCompleted && (selectedSalaries.gov || selectedSalaries.company) && (
+              <div className="mb-6 grid w-full max-w-md grid-cols-2 rounded-lg border border-gray-200 bg-white p-1 shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setSalaryViewMode('all')}
+                  className={`h-10 rounded-md px-4 text-sm font-semibold transition ${
+                    salaryViewMode === 'all'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  All Records
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSalaryViewMode('supervisor')}
+                  className={`h-10 rounded-md px-4 text-sm font-semibold transition ${
+                    salaryViewMode === 'supervisor'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  By Supervisor
+                </button>
+              </div>
+            )}
+
+            {!processStatus?.isCompleted && salaryViewMode === 'all' && selectedSalaries.gov && govSalaries.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">
                   Government Salary - {getMonthName(month)} {year}
@@ -415,7 +596,7 @@ const SalaryGeneration = () => {
             )}
 
             {/* Company Salary Table */}
-            {!processStatus?.isCompleted && selectedSalaries.company && companySalaries.length > 0 && (
+            {!processStatus?.isCompleted && salaryViewMode === 'all' && selectedSalaries.company && companySalaries.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">
                   Original Salary - {getMonthName(month)} {year}
@@ -431,6 +612,28 @@ const SalaryGeneration = () => {
               </div>
             )}
 
+            {!processStatus?.isCompleted && salaryViewMode === 'supervisor' && selectedSalaries.gov && govSalaries.length > 0 && (
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <SupervisorSalaryEditor
+                  type="gov"
+                  title={`Government Salary by Supervisor - ${getMonthName(month)} ${year}`}
+                  salaries={govSalaries}
+                  onSaveSalary={updateGovSalary}
+                />
+              </div>
+            )}
+
+            {!processStatus?.isCompleted && salaryViewMode === 'supervisor' && selectedSalaries.company && companySalaries.length > 0 && (
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <SupervisorSalaryEditor
+                  type="company"
+                  title={`Original Salary by Supervisor - ${getMonthName(month)} ${year}`}
+                  salaries={companySalaries}
+                  onSaveSalary={updateCompanySalary}
+                />
+              </div>
+            )}
+
             {/* Download Both Option */}
             {!processStatus?.isCompleted && selectedSalaries.gov && selectedSalaries.company && (
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -440,6 +643,19 @@ const SalaryGeneration = () => {
                   className="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-purple-400"
                 >
                   {loading ? 'Downloading...' : 'Download Both Salary Reports (Excel)'}
+                </button>
+              </div>
+            )}
+
+            {!processStatus?.isCompleted && (
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                <button
+                  type="button"
+                  onClick={handleCompleteProcess}
+                  disabled={loading || !processStatus?.totalEntries}
+                  className="w-full rounded-md bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700 disabled:bg-gray-400"
+                >
+                  This Month Salary Process Completed
                 </button>
               </div>
             )}

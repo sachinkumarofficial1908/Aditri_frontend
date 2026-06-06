@@ -251,6 +251,56 @@ export const SalaryProvider = ({ children }) => {
     []
   );
 
+  const updateGovSalary = useCallback(
+    async (id, data) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await salaryAPI.updateGovSalary(id, data);
+        const updatedSalary = response.data.data;
+        setGovSalaries((prev) =>
+          prev.map((salary) => (salary._id === id ? updatedSalary : salary))
+        );
+        setSuccessMessage('Government salary updated successfully');
+
+        return updatedSalary;
+      } catch (err) {
+        const message = err.response?.data?.message || 'Failed to update government salary';
+        setError(message);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const updateCompanySalary = useCallback(
+    async (id, data) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await salaryAPI.updateCompanySalary(id, data);
+        const updatedSalary = response.data.data;
+        setCompanySalaries((prev) =>
+          prev.map((salary) => (salary._id === id ? updatedSalary : salary))
+        );
+        setSuccessMessage('Original salary updated successfully');
+
+        return updatedSalary;
+      } catch (err) {
+        const message = err.response?.data?.message || 'Failed to update original salary';
+        setError(message);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
   const downloadGovSalaryExcel = useCallback(
     async (month, year) => {
       try {
@@ -423,6 +473,8 @@ export const SalaryProvider = ({ children }) => {
     generateCompanySalary,
     fetchGovSalaries,
     fetchCompanySalaries,
+    updateGovSalary,
+    updateCompanySalary,
     downloadGovSalaryExcel,
     downloadCompanySalaryExcel,
     downloadBothSalaryExcel,

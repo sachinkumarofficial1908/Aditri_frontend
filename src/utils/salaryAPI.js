@@ -1,24 +1,4 @@
-import axios from 'axios';
-import { ENV } from './env.js';
-
-const api = axios.create({
-  baseURL: ENV.apiBaseUrl,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Add auth token to requests
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem(ENV.authTokenKey);
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+import api from './api.js';
 
 /**
  * Attendance API Services
@@ -36,9 +16,7 @@ export const attendanceAPI = {
     formData.append('year', year);
 
     return api.post('/salary/attendance/bulk', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      timeout: 60000,
     });
   },
 
