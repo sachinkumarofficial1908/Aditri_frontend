@@ -25,7 +25,7 @@ export const calculateCartTotals = (items = []) => {
   const tax = items.reduce((sum, item) => (
     sum + Math.round((getLineSubtotal(item) * getGstRate(item)) / 100)
   ), 0);
-  const shipping = subtotal > 10000 ? 0 : 200;
+  const shipping = 0;
 
   return {
     subtotal,

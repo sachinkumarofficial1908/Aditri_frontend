@@ -83,7 +83,6 @@ export default function Cart() {
                     {shipping === 0 ? 'FREE' : `₹${shipping}`}
                   </span>
                 </div>
-                {shipping > 0 && <p className="text-xs text-gray-400">Free shipping on orders above ₹10,000</p>}
                 <hr className="border-gray-100" />
                 <div className="flex justify-between text-base font-bold">
                   <span>Total</span><span>₹{total.toLocaleString('en-IN')}</span>
