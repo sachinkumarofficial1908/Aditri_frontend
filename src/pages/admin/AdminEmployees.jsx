@@ -117,6 +117,10 @@ const getSupervisorLabel = (supervisor) => {
     : getSupervisorId(supervisor);
 };
 
+const getEmployeePhotoUrl = (employee) => (
+  resolveImageUrl(employee?.photoUrl || employee?.photoPath) || ''
+);
+
 export default function AdminEmployees() {
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
@@ -1084,6 +1088,36 @@ export default function AdminEmployees() {
                 >
                   <X size={18} />
                 </button>
+              </div>
+              <div className="mb-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <p className="mb-3 text-xs uppercase tracking-[0.18em] text-gray-500">Photo</p>
+                {getEmployeePhotoUrl(viewEmployee) ? (
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="h-40 w-40 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+                      <img
+                        src={getEmployeePhotoUrl(viewEmployee)}
+                        alt={`${viewEmployee.name || 'Employee'} photo`}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-gray-900">{viewEmployee.name}</p>
+                      <p className="text-sm text-gray-500">Employee photo is available.</p>
+                      <a
+                        href={getEmployeePhotoUrl(viewEmployee)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex rounded-xl border border-primary-200 bg-primary-50 px-3 py-2 text-xs font-semibold text-primary-700 transition hover:bg-primary-100"
+                      >
+                        View Full Photo
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex h-40 items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white text-sm font-medium text-gray-400">
+                    No photo uploaded
+                  </div>
+                )}
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 {Object.entries({
