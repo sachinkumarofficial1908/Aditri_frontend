@@ -22,7 +22,15 @@ api.interceptors.request.use((config) => {
 });
 
 const activityLogAPI = {
-  getAll: (params) => api.get('/activity-logs', { params }).then(r => r.data),
+  getAll: async (params) => {
+    try {
+      const response = await api.get('/activity-logs', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching activity logs:', error);
+      throw error;
+    }
+  },
 };
 
 const actionLabels = {
@@ -50,7 +58,7 @@ export default function AdminActivityLogs() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(50);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, isError } = useQuery({
     queryKey: ['activity-logs', searchTerm, selectedAction, page, limit],
     queryFn: () => activityLogAPI.getAll({
       search: searchTerm || undefined,
@@ -58,6 +66,7 @@ export default function AdminActivityLogs() {
       page,
       limit,
     }),
+    retry: 1,
   });
 
   const formatDate = (dateString) => {
@@ -76,7 +85,7 @@ export default function AdminActivityLogs() {
             </Link>
             <div>
               <h1 className="text-2xl font-display font-bold text-gray-900">Activity Logs</h1>
-              <p className="text-sm text-gray-500 mt-1">Track all admin activities and changes</p>
+              <p className="text-sm text-gray-500 mt-1">Track all system activities and user actions</p>
             </div>
           </div>
         </div>
@@ -135,11 +144,19 @@ export default function AdminActivityLogs() {
             </div>
           </div>
 
+          {isError && (
+            <div className="border-b border-gray-100 px-5 py-4 bg-red-50 border-l-4 border-red-500">
+              <p className="text-sm text-red-700">
+                <strong>Error:</strong> {error?.response?.data?.message || error?.message || 'Failed to load activity logs'}
+              </p>
+            </div>
+          )}
+
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-gray-600">
               <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
                 <tr>
-                  <th className="px-5 py-4">Admin</th>
+                  <th className="px-5 py-4">User</th>
                   <th className="px-5 py-4">Action</th>
                   <th className="px-5 py-4">Target</th>
                   <th className="px-5 py-4">Date & Time</th>
