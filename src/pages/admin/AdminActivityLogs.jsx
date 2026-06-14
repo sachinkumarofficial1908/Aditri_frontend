@@ -2,26 +2,46 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Clock, Filter, Search, Download } from 'lucide-react';
+import axios from 'axios';
 import { AdminSidebar } from './Dashboard';
+import { ENV } from '../../utils/env';
 import toast from 'react-hot-toast';
 
+const api = axios.create({
+  baseURL: ENV.apiBaseUrl,
+  withCredentials: true,
+});
+
+// Add token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem(ENV.authTokenKey);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 const activityLogAPI = {
-  getAll: (params) => fetch(`/api/activity-logs?${new URLSearchParams(params)}`, {
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
-  }).then(r => r.json()),
+  getAll: (params) => api.get('/activity-logs', { params }).then(r => r.data),
 };
 
 const actionLabels = {
+  login: { label: 'Login', color: 'bg-indigo-100 text-indigo-800' },
+  logout: { label: 'Logout', color: 'bg-gray-100 text-gray-800' },
   employee_create: { label: 'Create Employee', color: 'bg-green-100 text-green-800' },
   employee_update: { label: 'Update Employee', color: 'bg-blue-100 text-blue-800' },
   employee_delete: { label: 'Delete Employee', color: 'bg-red-100 text-red-800' },
-  employee_status_change: { label: 'Change Status', color: 'bg-purple-100 text-purple-800' },
   project_create: { label: 'Create Project', color: 'bg-green-100 text-green-800' },
   project_update: { label: 'Update Project', color: 'bg-blue-100 text-blue-800' },
   project_delete: { label: 'Delete Project', color: 'bg-red-100 text-red-800' },
-  salary_generate: { label: 'Generate Salary', color: 'bg-yellow-100 text-yellow-800' },
-  login: { label: 'Login', color: 'bg-indigo-100 text-indigo-800' },
-  logout: { label: 'Logout', color: 'bg-gray-100 text-gray-800' },
+  attendance_upload: { label: 'Upload Attendance', color: 'bg-yellow-100 text-yellow-800' },
+  attendance_generate: { label: 'Generate Attendance', color: 'bg-yellow-100 text-yellow-800' },
+  salary_generate: { label: 'Generate Salary', color: 'bg-orange-100 text-orange-800' },
+  salary_approve: { label: 'Approve Salary', color: 'bg-green-100 text-green-800' },
+  wage_slip_generate: { label: 'Generate Wage Slip', color: 'bg-purple-100 text-purple-800' },
+  excel_upload: { label: 'Upload Excel', color: 'bg-blue-100 text-blue-800' },
+  report_generate: { label: 'Generate Report', color: 'bg-cyan-100 text-cyan-800' },
+  data_export: { label: 'Export Data', color: 'bg-teal-100 text-teal-800' },
 };
 
 export default function AdminActivityLogs() {
@@ -136,18 +156,18 @@ export default function AdminActivityLogs() {
                     <td className="px-5 py-4"><div className="h-4 w-16 rounded-full bg-gray-200" /></td>
                   </tr>
                 ))}
-                {!isLoading && data?.logs?.length === 0 && (
+                {!isLoading && data?.data?.length === 0 && (
                   <tr>
                     <td colSpan="5" className="px-5 py-8 text-center text-gray-500">
                       No activity logs found
                     </td>
                   </tr>
                 )}
-                {!isLoading && data?.logs?.map((log) => (
+                {!isLoading && data?.data?.map((log) => (
                   <tr key={log._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-4">
-                      <div className="font-medium text-gray-900">{log.adminName}</div>
-                      <div className="text-xs text-gray-500">{log.adminEmail}</div>
+                      <div className="font-medium text-gray-900">{log.userName}</div>
+                      <div className="text-xs text-gray-500">{log.userEmail}</div>
                     </td>
                     <td className="px-5 py-4">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${actionLabels[log.action]?.color || 'bg-gray-100 text-gray-800'}`}>
@@ -180,10 +200,10 @@ export default function AdminActivityLogs() {
           </div>
 
           {/* Pagination */}
-          {data?.logs && data.total > 0 && (
+          {data?.data && data.pagination?.total > 0 && (
             <div className="border-t border-gray-100 px-5 py-4 flex items-center justify-between">
               <div className="text-sm text-gray-600">
-                Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, data.total)} of {data.total} logs
+                Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, data.pagination.total)} of {data.pagination.total} logs
               </div>
               <div className="flex gap-2">
                 <button
@@ -194,11 +214,11 @@ export default function AdminActivityLogs() {
                   Previous
                 </button>
                 <div className="flex items-center gap-1 text-sm">
-                  Page <span className="font-medium">{page}</span> of <span className="font-medium">{Math.ceil(data.total / limit)}</span>
+                  Page <span className="font-medium">{page}</span> of <span className="font-medium">{data.pagination?.pages}</span>
                 </div>
                 <button
                   onClick={() => setPage(p => p + 1)}
-                  disabled={page >= Math.ceil(data.total / limit)}
+                  disabled={page >= data.pagination?.pages}
                   className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next

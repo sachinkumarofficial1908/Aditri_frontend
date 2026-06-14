@@ -38,6 +38,7 @@ const AdminMuster = lazy(() => import('./pages/admin/AdminMuster'));
 const AdminAttendance = lazy(() => import('./pages/admin/AdminAttendance'));
 const AdminWageSlipGenerator = lazy(() => import('./pages/admin/AdminWageSlipGenerator'));
 const AdminPaymentReceipts = lazy(() => import('./pages/admin/AdminPaymentReceipts'));
+const AdminActivityLogs = lazy(() => import('./pages/admin/AdminActivityLogs'));
 const SalaryGeneration = lazy(() => import('./pages/admin/SalaryGeneration'));
 const SupervisorDashboard = lazy(() => import('./pages/supervisor/Dashboard'));
 const AttendanceEntry = lazy(() => import('./pages/supervisor/AttendanceEntry'));
@@ -123,6 +124,7 @@ function AppRoutes() {
         <Route path="/admin/attendance-generator" element={<AdminRoute><AdminLayout><AdminAttendance /></AdminLayout></AdminRoute>} />
         <Route path="/admin/wage-slip-generator" element={<AdminRoute><AdminLayout><AdminWageSlipGenerator /></AdminLayout></AdminRoute>} />
         <Route path="/admin/payment-receipts" element={<AdminRoute><AdminLayout><AdminPaymentReceipts /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/activity-logs" element={<AdminRoute><AdminLayout><AdminActivityLogs /></AdminLayout></AdminRoute>} />
         <Route path="/admin/salary/generate" element={<AdminRoute><AdminLayout><SalaryGeneration /></AdminLayout></AdminRoute>} />
         
         {/* Supervisor Salary/Attendance routes */}
