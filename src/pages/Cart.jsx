@@ -56,7 +56,7 @@ export default function Cart() {
                           className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors">
                           <Plus size={14} />
                         </button>
-                        {/* <HELLO></HELLO> */}
+                        
                       </div>
                       <div className="flex items-center gap-4">
                         <p className="font-bold text-gray-900">₹{((item.discountPrice || item.price) * item.qty).toLocaleString('en-IN')}</p>
