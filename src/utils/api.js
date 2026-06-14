@@ -159,10 +159,10 @@ export const musterAPI = {
 };
 
 export const attendanceAPI = {
-  validate: (formData) => api.post('/excel/attendance/validate', formData, {
+  validate: (formData) => api.post('/attendance/validate', formData, {
     timeout: 30000,
   }),
-  generate: (formData) => api.post('/excel/attendance/generate', formData, {
+  generate: (formData) => api.post('/attendance/generate', formData, {
     responseType: 'blob',
     timeout: 60000,
   }),
