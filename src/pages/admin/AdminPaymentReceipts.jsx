@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, UploadCloud, Download, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { paymentReceiptAPI } from '../../utils/api';
-import { AdminSidebar } from './Dashboard';
 
 const PAYMENT_MODES = ['NEFT', 'IMPS'];
 const TIME_OPTIONS = [
@@ -180,8 +179,7 @@ export default function AdminPaymentReceipts() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar active="payment-receipts" />
-      <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>

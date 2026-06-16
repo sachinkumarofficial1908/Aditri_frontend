@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSalaryContext } from '../../context/SalaryContext';
-import { AdminSidebar } from './Dashboard';
 import Toast from '../../components/common/Toast';
 import Loader from '../../components/common/Loader';
 import GovSalaryTable from '../../components/salary/GovSalaryTable';
@@ -237,8 +236,7 @@ const SalaryGeneration = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar active="salary-generation" />
-      <main className="ml-64 flex-1 p-8">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Salary Generation</h1>
@@ -504,14 +502,14 @@ const SalaryGeneration = () => {
             <div className="flex gap-4 mt-8">
               <button
                 onClick={() => setCurrentStep(1)}
-                className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 font-semibold focus:outline-none focus:ring-2 focus:ring-gray-400"
+                className="flex-1 min-w-0 px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 font-semibold focus:outline-none focus:ring-2 focus:ring-gray-400"
               >
                 Back
               </button>
               <button
                 onClick={handleStep2Complete}
                 disabled={generationInProgress || (!selectedSalaries.gov && !selectedSalaries.company)}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-green-400"
+                className="flex-1 min-w-0 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 font-semibold focus:outline-none focus:ring-2 focus:ring-green-400"
               >
                 {generationInProgress ? 'Generating...' : 'Generate Salary'}
               </button>

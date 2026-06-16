@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useSalaryContext } from '../../context/SalaryContext';
-import { AdminSidebar } from '../admin/Dashboard';
 import Toast from '../../components/common/Toast';
 import Loader from '../../components/common/Loader';
 import BulkUploadPreview from '../../components/salary/BulkUploadPreview';
@@ -16,7 +15,6 @@ const BulkAttendanceUpload = () => {
     clearSuccessMessage,
   } = useSalaryContext();
 
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [file, setFile] = useState(null);
@@ -76,8 +74,7 @@ const BulkAttendanceUpload = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar active="bulk-upload" isMobileOpen={isMobileSidebarOpen} onClose={() => setIsMobileSidebarOpen(false)} />
-      <main className="flex-1 py-8 px-4 lg:ml-64">
+      <main className="flex-1 min-w-0 py-8 px-4 ">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between gap-4">
@@ -85,13 +82,6 @@ const BulkAttendanceUpload = () => {
               <h1 className="text-3xl font-bold text-gray-900">Bulk Attendance Upload</h1>
               <p className="text-gray-600 mt-2">Upload attendance data via Excel file</p>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition"
-            >
-              Menu
-            </button>
           </div>
 
         {/* Instructions */}

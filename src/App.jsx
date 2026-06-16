@@ -7,6 +7,7 @@ import { SalaryProvider } from './context/SalaryContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import AiHelpChat from './components/AiHelpChat';
+import AdminLayout from './components/AdminLayout';
 import Loader from './components/common/Loader';
 import ScrollToTop from './components/common/ScrollToTop';
 
@@ -80,10 +81,6 @@ const PublicLayout = ({ children }) => (
     <Footer />
     <AiHelpChat />
   </div>
-);
-
-const AdminLayout = ({ children }) => (
-  <div className="min-h-screen bg-gray-50">{children}</div>
 );
 
 function AppRoutes() {

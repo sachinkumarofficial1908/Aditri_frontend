@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
 import { employeeAPI } from '../../utils/api';
-import { AdminSidebar } from '../admin/Dashboard';
-import { Briefcase, LayoutDashboard, LogOut, Menu } from 'lucide-react';
+import { Briefcase, LayoutDashboard, LogOut } from 'lucide-react';
 import Loader from '../../components/common/Loader';
 import toast from 'react-hot-toast';
 
 export default function SupervisorDashboard() {
   const { user, logout } = useAuth();
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['supervisor-dashboard'],
@@ -28,21 +26,12 @@ export default function SupervisorDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar active="dashboard" isMobileOpen={isMobileSidebarOpen} onClose={() => setIsMobileSidebarOpen(false)} />
-      <main className="flex-1 w-full lg:ml-64 p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-8">
         <div className="mb-6 sm:mb-8 flex items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-gray-900">Supervisor Dashboard</h1>
             <p className="text-gray-600 text-sm mt-1">Manage your employee master and view key team metrics.</p>
           </div>
-          <button
-            onClick={() => setIsMobileSidebarOpen(true)}
-            className="lg:hidden inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm"
-            aria-label="Open menu"
-          >
-            <Menu size={18} />
-            Menu
-          </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">

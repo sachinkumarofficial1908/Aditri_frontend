@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 import { getErrorMessage, productAPI, uploadAPI } from '../../utils/api';
 import { resolveImageUrl } from '../../utils/imageUrl';
-import { AdminSidebar } from './Dashboard';
 import toast from 'react-hot-toast';
 
 // ─── Constants matching backend ────────────────────────────────────────────────
@@ -266,7 +265,7 @@ function ProductForm({ initial, onSave, onClose }) {
         </div>
 
         {/* Form content */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+        <form onSubmit={handleSubmit} className="flex-1 min-w-0 overflow-y-auto">
           <div className="p-7">
 
             {/* ── TAB: Basic Info ── */}
@@ -614,9 +613,8 @@ export default function AdminProducts() {
 
   return (
     <div className="flex min-h-screen">
-      <AdminSidebar active="products" />
 
-      <main className="ml-64 flex-1 p-8 bg-gray-50">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 bg-gray-50">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">

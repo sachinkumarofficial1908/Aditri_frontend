@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Clock, Filter, Search, Download } from 'lucide-react';
 import axios from 'axios';
-import { AdminSidebar } from './Dashboard';
 import { ENV } from '../../utils/env';
 import toast from 'react-hot-toast';
 
@@ -76,8 +75,7 @@ export default function AdminActivityLogs() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar active="activity-logs" />
-      <main className="ml-64 flex-1 p-8">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex items-center gap-3">
             <Link to="/admin" className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition">
@@ -125,7 +123,7 @@ export default function AdminActivityLogs() {
               </div>
 
               <div className="flex items-end gap-2">
-                <label className="flex-1">
+                <label className="flex-1 min-w-0">
                   <span className="text-xs font-medium text-gray-700 mb-1 block">Items per page</span>
                   <select
                     value={limit}

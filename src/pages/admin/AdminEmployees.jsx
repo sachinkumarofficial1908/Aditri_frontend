@@ -7,7 +7,6 @@ import * as XLSX from 'xlsx';
 import { employeeAPI } from '../../utils/api';
 import { resolveImageUrl } from '../../utils/imageUrl';
 import { validations, formatField, validateField, formatBackendErrors } from '../../utils/validations';
-import { AdminSidebar } from './Dashboard';
 import toast from 'react-hot-toast';
 
 const requiredFields = [
@@ -551,8 +550,7 @@ export default function AdminEmployees() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar active="employee-master" />
-      <main className="ml-64 flex-1 p-8">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex items-center gap-3">
             <Link to="/admin" className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition">
@@ -602,7 +600,7 @@ export default function AdminEmployees() {
               <div className="lg:col-span-2 space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Photo</label>
                 <div className="flex gap-4">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <label className="flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition">
                       <Upload size={18} className="text-gray-400" />
                       <span className="text-sm text-gray-600">Upload Photo (JPG/PNG, max 5MB)</span>
@@ -1180,7 +1178,7 @@ export default function AdminEmployees() {
                       onChange={(e) => setNewStatus(e.target.value)}
                       className="w-4 h-4"
                     />
-                    <span className="flex-1 text-sm font-medium text-gray-900">{status}</span>
+                    <span className="flex-1 min-w-0 text-sm font-medium text-gray-900">{status}</span>
                     <span
                       className={`inline-block w-2 h-2 rounded-full ${
                         status === 'Valid'
@@ -1198,7 +1196,7 @@ export default function AdminEmployees() {
                 <button
                   type="button"
                   onClick={() => setStatusModalEmployee(null)}
-                  className="flex-1 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+                  className="flex-1 min-w-0 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
                 >
                   Cancel
                 </button>
@@ -1206,7 +1204,7 @@ export default function AdminEmployees() {
                   type="button"
                   onClick={() => updateStatusMutation.mutate({ id: statusModalEmployee._id, status: newStatus })}
                   disabled={updateStatusMutation.isPending}
-                  className="flex-1 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="flex-1 min-w-0 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   {updateStatusMutation.isPending ? 'Saving...' : 'Save Status'}
                 </button>

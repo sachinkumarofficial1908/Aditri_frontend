@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Edit2, Trash2, Folder, X, Check, ArrowLeft } from 'lucide-react';
 import { projectAPI } from '../../utils/api';
-import { AdminSidebar } from './Dashboard';
 import toast from 'react-hot-toast';
 
 function ProjectForm({ initial, onSave, onClose }) {
@@ -102,8 +101,7 @@ export default function AdminProjects() {
 
   return (
     <div className="flex min-h-screen">
-      <AdminSidebar active="projects" />
-      <main className="ml-64 flex-1 p-8 bg-gray-50">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 bg-gray-50">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <Link to="/admin" className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition">
@@ -153,8 +151,8 @@ export default function AdminProjects() {
                   Are you sure you want to delete <strong>"{deleteConfirm.title}"</strong>? This action cannot be undone.
                 </p>
                 <div className="flex gap-3">
-                  <button onClick={() => setDeleteConfirm(null)} className="flex-1 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition">Cancel</button>
-                  <button onClick={() => deleteMutation.mutate(deleteConfirm._id)} disabled={deleteMutation.isPending} className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                  <button onClick={() => setDeleteConfirm(null)} className="flex-1 min-w-0 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition">Cancel</button>
+                  <button onClick={() => deleteMutation.mutate(deleteConfirm._id)} disabled={deleteMutation.isPending} className="flex-1 min-w-0 px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
                     {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>

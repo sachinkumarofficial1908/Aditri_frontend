@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import { employeeAPI } from '../../utils/api';
 import Toast from '../../components/common/Toast';
 import Loader from '../../components/common/Loader';
-import { AdminSidebar } from '../admin/Dashboard';
 import AttendanceEntryTable from '../../components/salary/AttendanceEntryTable';
 import { validateAttendanceData, getMonthName } from '../../utils/salaryUtils';
 
@@ -31,7 +30,6 @@ const AttendanceEntry = () => {
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [entries, setEntries] = useState([]);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [employeeSearch, setEmployeeSearch] = useState('');
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
@@ -203,21 +201,13 @@ const AttendanceEntry = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar active="attendance-entry" isMobileOpen={isMobileSidebarOpen} onClose={() => setIsMobileSidebarOpen(false)} />
-      <main className="flex-1 py-8 px-4 lg:ml-64">
+      <main className="flex-1 min-w-0 py-8 px-4 ">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8 flex items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Attendance Entry</h1>
               <p className="text-gray-600 mt-2">Supervisor: {user?.name || 'N/A'}</p>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition"
-            >
-              Menu
-            </button>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">

@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ShoppingBag, ArrowLeft } from 'lucide-react';
 import { orderAPI } from '../../utils/api';
-import { AdminSidebar } from './Dashboard';
 import toast from 'react-hot-toast';
 
 const STATUS_COLORS = {
@@ -33,8 +32,7 @@ export function AdminOrders() {
 
   return (
     <div className="flex min-h-screen">
-      <AdminSidebar active="orders" />
-      <main className="ml-64 flex-1 p-8 bg-gray-50">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 bg-gray-50">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-display font-bold text-gray-900">Orders</h1>

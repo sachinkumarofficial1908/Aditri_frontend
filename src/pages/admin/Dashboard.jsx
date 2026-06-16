@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -20,151 +20,34 @@ import {
   MessageSquare,
   TrendingUp,
   Folder,
-  LogOut,
-  LayoutDashboard,
-  Settings,
   ChevronRight,
-  Menu,
-  X,
-  UploadCloud,
-  Briefcase,
-  DollarSign,
-  Clock,
 } from 'lucide-react';
 import { adminAPI } from '../../utils/api';
-import { useAuth } from '../../context/AuthContext';
-import toast from 'react-hot-toast';
 
-const ADMIN_NAV = [
-  { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/admin/products', icon: Package, label: 'Products' },
-  { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
-  { to: '/admin/inquiries', icon: MessageSquare, label: 'Inquiries' },
-  { to: '/admin/projects', icon: Folder, label: 'Projects' },
-  { to: '/admin/muster-roll', icon: UploadCloud, label: 'Muster Roll' },
-  { to: '/admin/attendance-generator', icon: UploadCloud, label: 'Timing Attendance ' },
-  { to: '/admin/wage-slip-generator', icon: UploadCloud, label: 'PPGCL Wage Slip' },
-  { to: '/admin/payment-receipts', icon: UploadCloud, label: 'Payment Receipts' },
-  { to: '/admin/salary/generate', icon: DollarSign, label: 'Salary Management' },
-  { to: '/admin/employees', icon: Briefcase, label: 'Employee Master' },
-  { to: '/admin/activity-logs', icon: Clock, label: 'Activity Logs' },
-  { to: '/admin/users', icon: Users, label: 'Users' },
-];
-
-const SUPERVISOR_NAV = [
-  { to: '/supervisor', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/supervisor/employees', icon: Briefcase, label: 'Employee Master' },
-  { to: '/supervisor/attendance/entry', icon: DollarSign, label: 'Attendance Entry' },
-  { to: '/supervisor/attendance/bulk', icon: UploadCloud, label: 'Bulk Upload' },
-];
-
-function AdminSidebar({ active, isMobileOpen = false, onClose = () => {} }) {
-  const { user, logout, isSupervisor } = useAuth();
-  const nav = isSupervisor ? SUPERVISOR_NAV : ADMIN_NAV;
-
-  const handleLogout = async () => {
-    await logout();
-    toast.success('Logged out');
-    onClose();
-  };
-
-  return (
-    <>
-      <div
-        className={`fixed inset-0 bg-black/40 z-40 transition-opacity lg:hidden ${
-          isMobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={onClose}
-      />
-
-      <aside
-        className={`w-64 bg-gray-900 text-white flex flex-col h-screen fixed left-0 top-0 z-50 transform transition-transform duration-300 lg:translate-x-0 ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="p-5 border-b border-gray-800">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-12 h-12 bg-black border-2 border-white rounded-full flex items-center justify-center shadow-lg transition-all duration-300 hover:shadow-red-500/40 hover:scale-105 hover:border-red-400 flex-shrink-0">
-                <img src="/logo.png" alt="Aditri logo" className="w-9 h-9 object-contain" />
-              </div>
-              <div className="min-w-0">
-                <p className="font-display font-bold text-sm">Aditri Admin</p>
-                <p className="text-xs text-gray-400 truncate">{user?.name}</p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-800 transition-colors"
-              aria-label="Close menu"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {nav.map(({ to, icon: Icon, label }) => (
-            <Link
-              key={to}
-              to={to}
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                active === label.toLowerCase().replace(/\s+/g, '-')
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-              }`}
-            >
-              <Icon size={18} />
-              {label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-gray-800 space-y-2">
-          <Link
-            to="/"
-            onClick={onClose}
-            className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
-          >
-            <Settings size={18} /> View Site
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-red-400 hover:bg-red-900/30 transition-all"
-          >
-            <LogOut size={18} /> Logout
-          </button>
-        </div>
-      </aside>
-    </>
-  );
-}
-
-export { AdminSidebar };
-
-function StatCard({ icon: Icon, label, value, color, sub }) {
-  return (
-    <motion.div whileHover={{ y: -3 }} className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-gray-100">
-      <div className="flex items-start justify-between mb-4">
-        <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl ${color} flex items-center justify-center`}>
-          <Icon size={20} className="text-white sm:w-[22px] sm:h-[22px]" />
+function StatCard({ icon: Icon, label, value, color, sub, to }) {
+  const content = (
+    <motion.div
+      whileHover={{ y: -3 }}
+      className="h-full rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md sm:p-6"
+    >
+      <div className="mb-4 flex items-start justify-between">
+        <div className={`flex h-11 w-11 items-center justify-center rounded-xl sm:h-12 sm:w-12 ${color}`}>
+          <Icon size={20} className="text-white sm:h-[22px] sm:w-[22px]" />
         </div>
         <TrendingUp size={16} className="text-green-500" />
       </div>
-      <p className="text-2xl sm:text-3xl font-display font-bold text-gray-900 break-words">{value}</p>
-      <p className="text-sm text-gray-600 mt-1">{label}</p>
-      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+      <p className="break-words font-display text-2xl font-bold text-gray-900 sm:text-3xl">{value}</p>
+      <p className="mt-1 text-sm text-gray-600">{label}</p>
+      {sub && <p className="mt-0.5 text-xs text-gray-400">{sub}</p>}
     </motion.div>
+  );
+
+  return (
+    to ? <Link to={to} className="block h-full">{content}</Link> : content
   );
 }
 
 export default function Dashboard() {
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
-  const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
-  const openMobileSidebar = () => setIsMobileSidebarOpen(true);
-
   const { data, isLoading } = useQuery({
     queryKey: ['admin-dashboard'],
     queryFn: () => adminAPI.getDashboard().then((r) => r.data),
@@ -172,7 +55,7 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="p-4 sm:p-6 lg:ml-64 lg:p-8 animate-pulse">
+      <div className="animate-pulse p-4 sm:p-6 lg:p-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-4 mb-8">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-32 sm:h-36 bg-gray-200 rounded-2xl" />
@@ -186,42 +69,34 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <AdminSidebar active="dashboard" isMobileOpen={isMobileSidebarOpen} onClose={closeMobileSidebar} />
-
-      <main className="flex-1 w-full lg:ml-64 p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-8">
         <div className="mb-6 sm:mb-8 flex items-start justify-between gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl font-display font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-600 text-sm mt-1">Welcome back! Here&apos;s what&apos;s happening.</p>
           </div>
-          <button
-            onClick={openMobileSidebar}
-            className="lg:hidden inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm"
-            aria-label="Open menu"
-          >
-            <Menu size={18} />
-            Menu
-          </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-4 mb-8">
-          <StatCard icon={Users} label="Users" value={s.users || 0} color="bg-blue-500" />
-          <StatCard icon={Package} label="Products" value={s.products || 0} color="bg-purple-500" />
-          <StatCard icon={ShoppingBag} label="Orders" value={s.orders || 0} color="bg-orange-500" />
+          <StatCard icon={Users} label="Users" value={s.users || 0} color="bg-blue-500" to="/admin/users" />
+          <StatCard icon={Package} label="Products" value={s.products || 0} color="bg-purple-500" to="/admin/products" />
+          <StatCard icon={ShoppingBag} label="Orders" value={s.orders || 0} color="bg-orange-500" to="/admin/orders" />
           <StatCard
             icon={MessageSquare}
             label="New Inquiries"
             value={s.newInquiries || 0}
             color="bg-red-500"
             sub="Awaiting response"
+            to="/admin/inquiries"
           />
-          <StatCard icon={Folder} label="Projects" value={s.projects || 0} color="bg-teal-500" />
+          <StatCard icon={Folder} label="Projects" value={s.projects || 0} color="bg-teal-500" to="/admin/projects" />
           <StatCard
             icon={TrendingUp}
             label="Revenue"
             value={`\u20B9${((s.totalRevenue || 0) / 100000).toFixed(1)}L`}
             color="bg-green-500"
             sub="Paid orders"
+            to="/admin/orders"
           />
         </div>
 
@@ -330,5 +205,4 @@ export default function Dashboard() {
     </div>
   );
 }
-
 

@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { Users, ToggleLeft, ToggleRight, Shield, PlusCircle, Phone, UserPlus, ArrowLeft } from 'lucide-react';
 import { adminAPI } from '../../utils/api';
-import { AdminSidebar } from './Dashboard';
 import toast from 'react-hot-toast';
 
 export default function AdminUsers() {
@@ -59,8 +58,7 @@ export default function AdminUsers() {
 
   return (
     <div className="flex min-h-screen">
-      <AdminSidebar active="users" />
-      <main className="ml-64 flex-1 p-8 bg-gray-50">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 bg-gray-50">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex items-center gap-3">
             <Link to="/admin" className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition">

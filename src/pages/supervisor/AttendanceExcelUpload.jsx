@@ -326,7 +326,7 @@ const AttendanceExcelUpload = () => {
                   setFile(null);
                   setFileName('');
                 }}
-                className="flex-1 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium"
+                className="flex-1 min-w-0 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium"
               >
                 Back
               </button>
@@ -334,7 +334,7 @@ const AttendanceExcelUpload = () => {
               <button
                 onClick={confirmUpload}
                 disabled={loading || validationData.validEntries === 0}
-                className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition font-medium"
+                className="flex-1 min-w-0 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition font-medium"
               >
                 {loading ? 'Uploading...' : `Confirm & Upload ${validationData.validEntries} Records`}
               </button>

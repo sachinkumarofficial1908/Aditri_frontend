@@ -354,7 +354,7 @@ const SupervisorAttendanceEntry = () => {
               <button
                 onClick={calculatePreview}
                 disabled={loading}
-                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition font-medium"
+                className="flex-1 min-w-0 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition font-medium"
               >
                 {loading ? 'Calculating...' : 'Calculate Salary'}
               </button>
@@ -362,7 +362,7 @@ const SupervisorAttendanceEntry = () => {
               <button
                 onClick={saveAttendance}
                 disabled={loading || !calculatedSalary}
-                className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition font-medium"
+                className="flex-1 min-w-0 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition font-medium"
               >
                 {loading ? 'Saving...' : 'Save Attendance'}
               </button>
