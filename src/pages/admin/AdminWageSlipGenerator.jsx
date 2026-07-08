@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Download, UploadCloud, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { wageSlipAPI } from '../../utils/api';
+import { getErrorMessage, wageSlipAPI } from '../../utils/api';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -91,7 +91,7 @@ export default function AdminWageSlipGenerator() {
         toast.success('File validation passed! All required headers found.');
       }
     } catch (error) {
-      const message = error.response?.data?.message || error.message || 'Failed to validate file.';
+      const message = getErrorMessage(error) || 'Failed to validate file.';
       setErrors([message]);
       toast.error(message);
     } finally {
@@ -125,7 +125,10 @@ export default function AdminWageSlipGenerator() {
       formData.append('file', file);
       formData.append('month', month);
       formData.append('year', year);
-      if (confirmMissing) formData.append('continueOnMissing', 'true');
+      if (confirmMissing) {
+        formData.append('continueOnMissing', 'true');
+        formData.append('allowMissingHeaders', 'true');
+      }
 
       const response = await wageSlipAPI.generate(formData);
       const blob = new Blob([response.data], { type: response.headers['content-type'] });
@@ -145,7 +148,7 @@ export default function AdminWageSlipGenerator() {
         return;
       }
 
-      const message = serverData?.message || error.message || 'Failed to generate wage slips.';
+      const message = getErrorMessage(error) || 'Failed to generate wage slips.';
       setErrors([message]);
       toast.error(message);
     } finally {
@@ -228,7 +231,7 @@ export default function AdminWageSlipGenerator() {
                 <p className="font-semibold">Required Headers:</p>
                 <p className="mt-1">Company Name, Name, S/O, Grade, Emp ID No., PF No, ESIC No., Bank A/C, Aadhar, Rate per Day, Total Payable days</p>
                 <p className="mt-2 font-semibold">Optional Headers:</p>
-                <p>Other Allowance (will be placed in G10 of wage slip)</p>
+                <p>Bonus, Leave Bonus, OT Amt, Other Allowance, Gross, PF @12%, ESIC @0.75%, Advance, Net Payable Amount</p>
               </div>
             </div>
 

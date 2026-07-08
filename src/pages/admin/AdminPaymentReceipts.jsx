@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, UploadCloud, Download, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { paymentReceiptAPI } from '../../utils/api';
+import { paymentReceiptAPI, sanitizeErrorMessage } from '../../utils/api';
 
 const PAYMENT_MODES = ['NEFT', 'IMPS'];
 const TIME_OPTIONS = [
@@ -18,13 +18,13 @@ const getApiErrorMessage = async (error, fallback) => {
     try {
       const text = await data.text();
       const parsed = JSON.parse(text);
-      return parsed.message || parsed.error || fallback;
+      return sanitizeErrorMessage(parsed.message || parsed.error, fallback);
     } catch {
       return fallback;
     }
   }
 
-  return data?.message || error.message || fallback;
+  return sanitizeErrorMessage(data?.message || error.message, fallback);
 };
 
 export default function AdminPaymentReceipts() {

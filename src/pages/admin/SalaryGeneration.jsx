@@ -6,6 +6,7 @@ import GovSalaryTable from '../../components/salary/GovSalaryTable';
 import CompanySalaryTable from '../../components/salary/CompanySalaryTable';
 import SupervisorSalaryEditor from '../../components/salary/SupervisorSalaryEditor';
 import { getMonthName, DEFAULT_BONUSES, DEFAULT_DEDUCTIONS } from '../../utils/salaryUtils';
+import toast from 'react-hot-toast';
 
 const getDefaultSupervisorConfig = () => ({
   bonusPercentage: DEFAULT_BONUSES[0]?.percentage ?? 8.33,
@@ -142,7 +143,7 @@ const SalaryGeneration = () => {
 
   const handleCompleteProcess = async () => {
     if (!processStatus?.totalEntries) {
-      alert('No attendance entries found for selected month/year');
+      toast.error('No attendance entries found for selected month/year');
       return;
     }
     if (!window.confirm(`Mark salary process completed for ${getMonthName(month)} ${year}?`)) {
@@ -195,7 +196,7 @@ const SalaryGeneration = () => {
 
   const handleStep2Complete = async () => {
     if (!selectedSalaries.gov && !selectedSalaries.company) {
-      alert('Please select at least one salary type to generate');
+      toast.error('Please select at least one salary type to generate');
       return;
     }
 

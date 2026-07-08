@@ -1,5 +1,6 @@
 import React, { createContext, useState, useCallback } from 'react';
 import { attendanceAPI, salaryAPI } from '../utils/salaryAPI';
+import { getErrorMessage } from '../utils/api';
 import { DEFAULT_BONUSES, DEFAULT_DEDUCTIONS } from '../utils/salaryUtils';
 
 export const SalaryContext = createContext();
@@ -38,7 +39,7 @@ export const SalaryProvider = ({ children }) => {
 
         return response.data;
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to save attendance entry';
+        const message = getErrorMessage(err) || 'Failed to save attendance entry';
         setError(message);
         throw err;
       } finally {
@@ -59,7 +60,7 @@ export const SalaryProvider = ({ children }) => {
 
         return response.data;
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to upload bulk attendance';
+        const message = getErrorMessage(err) || 'Failed to upload bulk attendance';
         setError(message);
         throw err;
       } finally {
@@ -80,7 +81,7 @@ export const SalaryProvider = ({ children }) => {
 
         return response.data.data || [];
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to fetch attendance';
+        const message = getErrorMessage(err) || 'Failed to fetch attendance';
         setError(message);
         throw err;
       } finally {
@@ -106,7 +107,7 @@ export const SalaryProvider = ({ children }) => {
 
         return response.data;
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to update attendance entry';
+        const message = getErrorMessage(err) || 'Failed to update attendance entry';
         setError(message);
         throw err;
       } finally {
@@ -130,7 +131,7 @@ export const SalaryProvider = ({ children }) => {
           prev.filter((entry) => entry._id !== id)
         );
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to delete attendance entry';
+        const message = getErrorMessage(err) || 'Failed to delete attendance entry';
         setError(message);
         throw err;
       } finally {
@@ -146,7 +147,7 @@ export const SalaryProvider = ({ children }) => {
         const response = await attendanceAPI.searchEmployees(query);
         return response.data.data || [];
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to search employees';
+        const message = getErrorMessage(err) || 'Failed to search employees';
         setError(message);
         throw err;
       }
@@ -174,7 +175,7 @@ export const SalaryProvider = ({ children }) => {
         setSuccessMessage('Government salary generated successfully');
         return response.data.data || [];
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to generate government salary';
+        const message = getErrorMessage(err) || 'Failed to generate government salary';
         setError(message);
         throw err;
       } finally {
@@ -199,7 +200,7 @@ export const SalaryProvider = ({ children }) => {
         setSuccessMessage('Original salary generated successfully');
         return response.data.data || [];
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to generate original salary';
+        const message = getErrorMessage(err) || 'Failed to generate original salary';
         setError(message);
         throw err;
       } finally {
@@ -220,7 +221,7 @@ export const SalaryProvider = ({ children }) => {
 
         return response.data.data || [];
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to fetch government salaries';
+        const message = getErrorMessage(err) || 'Failed to fetch government salaries';
         setError(message);
         throw err;
       } finally {
@@ -241,7 +242,7 @@ export const SalaryProvider = ({ children }) => {
 
         return response.data.data || [];
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to fetch company salaries';
+        const message = getErrorMessage(err) || 'Failed to fetch company salaries';
         setError(message);
         throw err;
       } finally {
@@ -266,7 +267,7 @@ export const SalaryProvider = ({ children }) => {
 
         return updatedSalary;
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to update government salary';
+        const message = getErrorMessage(err) || 'Failed to update government salary';
         setError(message);
         throw err;
       } finally {
@@ -291,7 +292,7 @@ export const SalaryProvider = ({ children }) => {
 
         return updatedSalary;
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to update original salary';
+        const message = getErrorMessage(err) || 'Failed to update original salary';
         setError(message);
         throw err;
       } finally {
@@ -320,7 +321,7 @@ export const SalaryProvider = ({ children }) => {
 
         setSuccessMessage('Government salary Excel downloaded successfully');
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to download government salary Excel';
+        const message = getErrorMessage(err) || 'Failed to download government salary Excel';
         setError(message);
         throw err;
       } finally {
@@ -349,7 +350,7 @@ export const SalaryProvider = ({ children }) => {
 
         setSuccessMessage('Original salary Excel downloaded successfully');
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to download original salary Excel';
+        const message = getErrorMessage(err) || 'Failed to download original salary Excel';
         setError(message);
         throw err;
       } finally {
@@ -378,7 +379,7 @@ export const SalaryProvider = ({ children }) => {
 
         setSuccessMessage('Salary reports Excel downloaded successfully');
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to download salary reports Excel';
+        const message = getErrorMessage(err) || 'Failed to download salary reports Excel';
         setError(message);
         throw err;
       } finally {
@@ -397,7 +398,7 @@ export const SalaryProvider = ({ children }) => {
         const response = await salaryAPI.getProcessStatus(month, year);
         return response.data.data;
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to fetch salary process status';
+        const message = getErrorMessage(err) || 'Failed to fetch salary process status';
         setError(message);
         throw err;
       } finally {
@@ -417,7 +418,7 @@ export const SalaryProvider = ({ children }) => {
         setSuccessMessage('This month salary process completed');
         return response.data.data;
       } catch (err) {
-        const message = err.response?.data?.message || 'Failed to complete salary process';
+        const message = getErrorMessage(err) || 'Failed to complete salary process';
         setError(message);
         throw err;
       } finally {

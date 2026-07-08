@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useSalaryContext } from '../../context/SalaryContext';
 import { useAuth } from '../../context/AuthContext';
-import { employeeAPI } from '../../utils/api';
+import { employeeAPI, getErrorMessage } from '../../utils/api';
+import toast from 'react-hot-toast';
 import Toast from '../../components/common/Toast';
 import Loader from '../../components/common/Loader';
 import AttendanceEntryTable from '../../components/salary/AttendanceEntryTable';
@@ -51,7 +52,7 @@ const AttendanceEntry = () => {
         const response = await employeeAPI.getAll({ limit: 10000, status: 'Valid' });
         setEmployees(response.data?.employees || []);
       } catch (err) {
-        alert(err.response?.data?.message || 'Failed to load employees');
+        toast.error(getErrorMessage(err) || 'Failed to load employees');
       } finally {
         setIsLoadingEmployees(false);
       }
@@ -139,7 +140,7 @@ const AttendanceEntry = () => {
       setFormData(emptyForm);
       setSelectedEmployee(null);
     } catch (err) {
-      alert(err.message);
+      toast.error(getErrorMessage(err));
     }
   };
 
@@ -148,7 +149,7 @@ const AttendanceEntry = () => {
       clearError();
 
       if (entries.length === 0) {
-        alert('Please add at least one entry');
+        toast.error('Please add at least one entry');
         return;
       }
 
@@ -171,21 +172,21 @@ const AttendanceEntry = () => {
         } catch (err) {
           errors.push({
             clmsId: entry.clms_id,
-            error: err.message,
+            error: getErrorMessage(err),
           });
         }
       }
 
       if (savedCount > 0) {
-        alert(`Successfully saved ${savedCount} entries`);
+        toast.success(`Successfully saved ${savedCount} entries`);
         setEntries([]);
       }
 
       if (errors.length > 0) {
-        console.error('Errors:', errors);
+        toast.error(`${errors.length} entr${errors.length === 1 ? 'y' : 'ies'} could not be saved.`);
       }
     } catch (err) {
-      alert(err.message);
+      toast.error(getErrorMessage(err));
     }
   };
 

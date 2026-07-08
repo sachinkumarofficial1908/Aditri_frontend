@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { musterAPI } from '../../utils/api';
+import { getErrorMessage, musterAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { ArrowLeft, ArrowDown, UploadCloud } from 'lucide-react';
 
@@ -55,27 +55,7 @@ export default function AdminMuster() {
       setDownloadName(response.headers['content-disposition']?.split('filename=')[1]?.replace(/"/g, '') || `muster-roll-${month}-${year}.xlsx`);
       toast.success('Muster roll generated. Download available below.');
     } catch (error) {
-      let message = 'Failed to generate the muster roll.';
-
-      if (error.response?.data) {
-        try {
-          if (typeof error.response.data === 'string') {
-            const parsed = JSON.parse(error.response.data);
-            message = parsed.message || error.response.statusText || message;
-          } else if (error.response.data instanceof Blob) {
-            const text = await error.response.data.text();
-            const parsed = JSON.parse(text);
-            message = parsed.message || error.response.statusText || message;
-          } else {
-            message = error.response.data.message || error.response.statusText || message;
-          }
-        } catch {
-          message = error.response.statusText || message;
-        }
-      } else if (error.message) {
-        message = error.message;
-      }
-
+      const message = getErrorMessage(error) || 'Failed to generate the muster roll.';
       toast.error(message);
     } finally {
       setLoading(false);

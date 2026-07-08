@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { getErrorMessage } from '../../utils/api';
 
 /**
  * Excel Upload Component
@@ -57,7 +58,7 @@ const AttendanceExcelUpload = () => {
       setValidationData(response.data.data);
       setUploadStage('preview');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to validate file');
+      setError(getErrorMessage(err) || 'Failed to validate file');
     } finally {
       setLoading(false);
     }
@@ -94,7 +95,7 @@ const AttendanceExcelUpload = () => {
 
       setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to confirm upload');
+      setError(getErrorMessage(err) || 'Failed to confirm upload');
     } finally {
       setLoading(false);
     }

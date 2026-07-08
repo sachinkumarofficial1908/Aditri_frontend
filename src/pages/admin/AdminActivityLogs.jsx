@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Clock, Filter, Search, Download } from 'lucide-react';
 import axios from 'axios';
 import { ENV } from '../../utils/env';
+import { getErrorMessage } from '../../utils/api';
 import toast from 'react-hot-toast';
 
 const api = axios.create({
@@ -26,7 +27,7 @@ const activityLogAPI = {
       const response = await api.get('/activity-logs', { params });
       return response.data;
     } catch (error) {
-      console.error('Error fetching activity logs:', error);
+      toast.error(getErrorMessage(error));
       throw error;
     }
   },
@@ -145,7 +146,7 @@ export default function AdminActivityLogs() {
           {isError && (
             <div className="border-b border-gray-100 px-5 py-4 bg-red-50 border-l-4 border-red-500">
               <p className="text-sm text-red-700">
-                <strong>Error:</strong> {error?.response?.data?.message || error?.message || 'Failed to load activity logs'}
+                <strong>Error:</strong> {getErrorMessage(error) || 'Failed to load activity logs'}
               </p>
             </div>
           )}

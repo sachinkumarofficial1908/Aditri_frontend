@@ -581,13 +581,13 @@ export default function AdminProducts() {
   const createMutation = useMutation({
     mutationFn: (data) => productAPI.create(data),
     onSuccess: () => { qc.invalidateQueries(['admin-products']); setShowForm(false); toast.success('✅ Product created!'); },
-    onError: (err) => toast.error(err.response?.data?.message || 'Failed to create product'),
+    onError: (err) => toast.error(getErrorMessage(err) || 'Failed to create product'),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => productAPI.update(id, data),
     onSuccess: () => { qc.invalidateQueries(['admin-products']); setEditProduct(null); toast.success('✅ Product updated!'); },
-    onError: (err) => toast.error(err.response?.data?.message || 'Failed to update'),
+    onError: (err) => toast.error(getErrorMessage(err) || 'Failed to update'),
   });
 
   const deleteMutation = useMutation({

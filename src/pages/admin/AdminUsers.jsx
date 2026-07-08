@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { Users, ToggleLeft, ToggleRight, Shield, PlusCircle, Phone, UserPlus, ArrowLeft } from 'lucide-react';
-import { adminAPI } from '../../utils/api';
+import { adminAPI, getErrorMessage } from '../../utils/api';
 import toast from 'react-hot-toast';
 
 export default function AdminUsers() {
@@ -48,7 +48,7 @@ export default function AdminUsers() {
       reset();
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Could not create supervisor');
+      toast.error(getErrorMessage(error) || 'Could not create supervisor');
     },
   });
 

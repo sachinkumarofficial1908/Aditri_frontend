@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
-import { authAPI, orderAPI } from '../utils/api';
+import { authAPI, getErrorMessage, orderAPI } from '../utils/api';
 import { getFirebaseAuth } from '../config/firebase';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -122,7 +122,7 @@ export function Checkout() {
     onError: (err) => {
       recaptchaVerifierRef.current?.clear?.();
       recaptchaVerifierRef.current = null;
-      toast.error(err.message || 'Unable to send OTP');
+      toast.error(getErrorMessage(err) || 'Unable to send OTP');
     },
   });
 
@@ -144,7 +144,7 @@ export function Checkout() {
       setTestVerificationId('');
       toast.success('Phone number verified.');
     },
-    onError: (err) => toast.error(err.message || 'Invalid OTP'),
+    onError: (err) => toast.error(getErrorMessage(err) || 'Invalid OTP'),
   });
 
   const mutation = useMutation({
@@ -158,12 +158,12 @@ export function Checkout() {
       const data = err.response?.data;
       if (data?.code === 'PRODUCT_UNAVAILABLE') {
         data.invalidProducts?.forEach((id) => removeItem(id));
-        toast.error(data.message || 'Some cart products are no longer available.');
+        toast.error(getErrorMessage(err) || 'Some cart products are no longer available.');
         return;
       }
 
       const validationMessage = data?.errors?.[0]?.msg;
-      toast.error(validationMessage || data?.message || 'Unable to place order. Please check your cart and try again.');
+      toast.error(validationMessage || getErrorMessage(err) || 'Unable to place order. Please check your cart and try again.');
     },
   });
 
@@ -224,7 +224,7 @@ export function Checkout() {
 
       checkout.open();
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Unable to start Razorpay payment.');
+      toast.error(getErrorMessage(err) || 'Unable to start Razorpay payment.');
     } finally {
       setCreatingPayment(false);
     }

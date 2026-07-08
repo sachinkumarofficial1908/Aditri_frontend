@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowDown, UploadCloud } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { attendanceAPI } from '../../utils/api';
+import { attendanceAPI, getErrorMessage } from '../../utils/api';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -75,7 +75,7 @@ export default function AdminAttendance() {
         toast.success('Validation complete. Ready to generate attendance.');
       }
     } catch (error) {
-      const message = error.response?.data?.message || error.message || 'Validation failed.';
+      const message = getErrorMessage(error) || 'Validation failed.';
       toast.error(message);
       setPreview({ errors: [message], warnings: [], valid: false });
     } finally {
@@ -112,7 +112,7 @@ export default function AdminAttendance() {
       setDownloadName(response.headers['content-disposition']?.split('filename=')[1]?.replace(/"/g, '') || `attendance-${month}-${year}.xlsx`);
       toast.success('Timing attendance sheet generated. Download is ready.');
     } catch (error) {
-      const message = error.response?.data?.message || error.message || 'Failed to generate attendance.';
+      const message = getErrorMessage(error) || 'Failed to generate attendance.';
       toast.error(message);
     } finally {
       setLoadingGenerate(false);

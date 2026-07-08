@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, Eye, ArrowLeft } from 'lucide-react';
-import { inquiryAPI } from '../../utils/api';
+import { getErrorMessage, inquiryAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
 
 const STATUS_COLORS = {
@@ -25,7 +25,7 @@ function InquiryModal({ inquiry, onClose }) {
       onClose();
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Unable to update inquiry.');
+      toast.error(getErrorMessage(err) || 'Unable to update inquiry.');
     },
   });
 

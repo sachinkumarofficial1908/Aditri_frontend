@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../utils/api';
 
 /**
  * Salary Management Dashboard
@@ -27,7 +29,7 @@ const SalaryManagementDashboard = () => {
 
       setSummary(response.data.data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch summary');
+      setError(getErrorMessage(err) || 'Failed to fetch summary');
     } finally {
       setLoading(false);
     }
@@ -57,11 +59,11 @@ const SalaryManagementDashboard = () => {
           params: { month, year, salaryType, format: 'json' }
         });
 
-        console.log('Report:', response.data.data);
-        alert('Report generated! Check browser console for data.');
+        setSummary(response.data.data);
+        toast.success('Report generated successfully.');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to generate report');
+      setError(getErrorMessage(err) || 'Failed to generate report');
     } finally {
       setLoading(false);
     }
@@ -82,10 +84,10 @@ const SalaryManagementDashboard = () => {
         salaryType
       });
 
-      alert('Salary month locked successfully!');
+      toast.success('Salary month locked successfully!');
       fetchSalarySummary();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to lock salary');
+      setError(getErrorMessage(err) || 'Failed to lock salary');
     } finally {
       setLoading(false);
     }
@@ -106,10 +108,10 @@ const SalaryManagementDashboard = () => {
         salaryType
       });
 
-      alert('Salary month unlocked successfully!');
+      toast.success('Salary month unlocked successfully!');
       fetchSalarySummary();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to unlock salary');
+      setError(getErrorMessage(err) || 'Failed to unlock salary');
     } finally {
       setLoading(false);
     }

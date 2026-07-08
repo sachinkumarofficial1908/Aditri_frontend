@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import debounce from 'lodash/debounce';
-import api from '../../utils/api';
+import api, { getErrorMessage } from '../../utils/api';
 
 /**
  * Supervisor Attendance Entry Page
@@ -44,7 +44,7 @@ const SupervisorAttendanceEntry = () => {
 
         setSearchResults(response.data.data || []);
       } catch (err) {
-        console.error('Search error:', err);
+        setError(getErrorMessage(err));
       }
     }, 300),
     []
@@ -99,7 +99,7 @@ const SupervisorAttendanceEntry = () => {
 
       setCalculatedSalary(response.data.data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to calculate salary');
+      setError(getErrorMessage(err) || 'Failed to calculate salary');
     } finally {
       setLoading(false);
     }
@@ -143,7 +143,7 @@ const SupervisorAttendanceEntry = () => {
 
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save attendance');
+      setError(getErrorMessage(err) || 'Failed to save attendance');
     } finally {
       setLoading(false);
     }
@@ -160,7 +160,7 @@ const SupervisorAttendanceEntry = () => {
         setQueueStats(response.data.data.stats);
       }
     } catch (err) {
-      console.error('Failed to fetch queue stats:', err);
+      setQueueStats(null);
     }
   };
 

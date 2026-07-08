@@ -38,20 +38,39 @@ api.interceptors.response.use(
   }
 );
 
+const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please try again.';
+const INTERNAL_ERROR_PATTERNS = [
+  /converting circular structure/i,
+  /constructor 'socket'/i,
+  /httpparser/i,
+  /closes the circle/i,
+  /\bat\s+\S+\s+\(/i,
+  /internal server error/i,
+];
+
+export const sanitizeErrorMessage = (message, fallback = DEFAULT_ERROR_MESSAGE) => {
+  if (typeof message !== 'string') return fallback;
+  const clean = message.trim();
+  if (!clean) return fallback;
+  if (INTERNAL_ERROR_PATTERNS.some((pattern) => pattern.test(clean))) return fallback;
+  return clean;
+};
+
 export const getErrorMessage = (error) => {
-  if (!error) return 'Something went wrong. Please try again.';
+  if (!error) return DEFAULT_ERROR_MESSAGE;
 
   if (error.code === 'ECONNABORTED' || /timeout/i.test(error.message || '')) {
     return 'The request timed out. Please try again in a moment.';
   }
 
   if (error.response) {
-    const serverMessage = error.response?.data?.message || error.response?.data?.errors?.[0]?.msg || error.response?.statusText;
-    if (typeof serverMessage === 'string' && serverMessage.trim()) {
-      return serverMessage;
-    }
     if (error.response.status >= 500) {
-      return 'Unable to connect to the server. Please check your connection or try again later.';
+      return 'The server could not complete the request. Please try again later.';
+    }
+    const serverMessage = error.response?.data?.message || error.response?.data?.errors?.[0]?.msg || error.response?.statusText;
+    const safeServerMessage = sanitizeErrorMessage(serverMessage, '');
+    if (safeServerMessage) {
+      return safeServerMessage;
     }
     return `Request failed with status ${error.response.status}. Please try again.`;
   }
@@ -60,7 +79,7 @@ export const getErrorMessage = (error) => {
     return 'Unable to reach the server. Please check your internet connection.';
   }
 
-  return error.message || 'Something went wrong. Please try again.';
+  return sanitizeErrorMessage(error.message, DEFAULT_ERROR_MESSAGE);
 };
 
 export default api;

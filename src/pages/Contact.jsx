@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, Clock, Send, LogIn } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
-import { inquiryAPI } from '../utils/api';
+import { getErrorMessage, inquiryAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import AnimatedSection from '../components/common/AnimatedSection';
 import toast from 'react-hot-toast';
@@ -28,7 +28,7 @@ export default function Contact() {
       toast.success('Inquiry submitted! We will contact you within 24 hours.', { duration: 5000, icon: '✅' });
       reset({ name: user?.name || '', email: user?.email || '' });
     },
-    onError: (err) => toast.error(err.response?.data?.message || 'Failed to submit. Try again.'),
+    onError: (err) => toast.error(getErrorMessage(err) || 'Failed to submit. Try again.'),
   });
 
   const onSubmit = (data) => {

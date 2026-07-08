@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { Plus, Trash2, CheckCircle, UserCheck, XCircle, ArrowLeft, Upload, X, Download, FileSpreadsheet, MoreHorizontal } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { employeeAPI } from '../../utils/api';
+import { employeeAPI, getErrorMessage } from '../../utils/api';
 import { resolveImageUrl } from '../../utils/imageUrl';
 import { validations, formatField, validateField, formatBackendErrors } from '../../utils/validations';
 import toast from 'react-hot-toast';
@@ -253,7 +253,7 @@ export default function AdminEmployees() {
       XLSX.writeFile(workbook, `employees-${new Date().toISOString().slice(0, 10)}.xlsx`);
       toast.success(`Exported ${exportEmployees.length} employees`);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to export employees');
+      toast.error(getErrorMessage(error) || 'Failed to export employees');
     } finally {
       setIsExporting(false);
     }
@@ -296,7 +296,7 @@ export default function AdminEmployees() {
         const firstError = errorData.errors[0];
         toast.error(firstError?.msg || 'Validation failed');
       } else {
-        const message = errorData?.message || error.response?.statusText || 'Failed to create employee';
+        const message = getErrorMessage(error) || 'Failed to create employee';
         setBackendErrors({});
         toast.error(message);
       }
@@ -336,7 +336,7 @@ export default function AdminEmployees() {
         const firstError = errorData.errors[0];
         toast.error(firstError?.msg || 'Validation failed');
       } else {
-        const message = errorData?.message || error.response?.statusText || 'Failed to update employee';
+        const message = getErrorMessage(error) || 'Failed to update employee';
         setBackendErrors({});
         toast.error(message);
       }
@@ -522,7 +522,7 @@ export default function AdminEmployees() {
       toast.success('Employee status updated');
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to update status');
+      toast.error(getErrorMessage(error) || 'Failed to update status');
     },
   });
 

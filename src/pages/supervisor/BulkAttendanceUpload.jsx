@@ -4,6 +4,7 @@ import Toast from '../../components/common/Toast';
 import Loader from '../../components/common/Loader';
 import BulkUploadPreview from '../../components/salary/BulkUploadPreview';
 import { getMonthName } from '../../utils/salaryUtils';
+import toast from 'react-hot-toast';
 
 const BulkAttendanceUpload = () => {
   const {
@@ -30,7 +31,7 @@ const BulkAttendanceUpload = () => {
     const fileExtension = selectedFile.name.substring(selectedFile.name.lastIndexOf('.'));
 
     if (!allowedExtensions.includes(fileExtension.toLowerCase())) {
-      alert('Please upload an Excel file (.xlsx or .xls)');
+      toast.error('Please upload an Excel file (.xlsx or .xls)');
       return;
     }
 
@@ -47,7 +48,7 @@ const BulkAttendanceUpload = () => {
           lastModified: new Date(selectedFile.lastModified).toLocaleDateString(),
         });
       } catch (err) {
-        alert('Error reading file');
+        toast.error('Error reading file');
       }
     };
     reader.readAsArrayBuffer(selectedFile);
@@ -58,7 +59,7 @@ const BulkAttendanceUpload = () => {
       clearError();
 
       if (!file) {
-        alert('Please select a file');
+        toast.error('Please select a file');
         return;
       }
 
