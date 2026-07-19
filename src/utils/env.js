@@ -5,7 +5,7 @@ const getEnv = (key, fallback) => {
 
 const isBrowser = typeof window !== 'undefined';
 const isLocalhost = isBrowser && ['localhost', '127.0.0.1'].includes(window.location.hostname);
-const liveBackendOrigin = 'https://aditri-backend-2.onrender.com';
+const liveBackendOrigin = isBrowser ? window.location.origin : 'https://aditri-backend-2.onrender.com';
 const localBackendOrigin = 'http://localhost:10000';
 
 const isLoopbackUrl = (value) => {

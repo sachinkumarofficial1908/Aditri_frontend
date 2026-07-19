@@ -9,7 +9,6 @@ const TIME_OPTIONS = [
   ...Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, '0')}:00`),
   '23:59',
 ];
-const SECRET_KEY = 'ACS-IDBI';
 
 const getApiErrorMessage = async (error, fallback) => {
   const data = error.response?.data;
@@ -77,16 +76,7 @@ export default function AdminPaymentReceipts() {
 
   const handlePageAccess = () => {
     if (!adminPassword) {
-      toast.error('Enter admin password with secret key (e.g., Admin@123ACS-IDBI).');
-      return;
-    }
-
-    const secretKeyLength = SECRET_KEY.length;
-    const s1 = adminPassword.slice(-secretKeyLength);
-    const s2 = adminPassword.slice(0, -secretKeyLength);
-
-    if (s1 !== SECRET_KEY || !s2) {
-      toast.error('Enter correct password');
+      toast.error('Enter the receipt access password.');
       return;
     }
 
@@ -163,7 +153,6 @@ export default function AdminPaymentReceipts() {
       formData.append('timeRangeStart', timeRangeStart);
       formData.append('timeRangeEnd', timeRangeEnd);
       formData.append('password', adminPassword);
-      formData.append('secretKey', SECRET_KEY);
 
       const response = await paymentReceiptAPI.generate(formData);
       const blob = new Blob([response.data], { type: response.headers['content-type'] });
@@ -197,7 +186,7 @@ export default function AdminPaymentReceipts() {
             <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-sm">
               <div className="grid gap-6 lg:grid-cols-1">
                 <label className="block">
-                  <span className="text-sm font-medium text-gray-700">Enter Password</span>
+                  <span className="text-sm font-medium text-gray-700">Enter Receipt Access Password</span>
                   <input
                     type="password"
                     value={adminPassword}

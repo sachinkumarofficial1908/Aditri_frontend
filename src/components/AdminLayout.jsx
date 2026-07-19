@@ -27,7 +27,7 @@ const ADMIN_NAV = [
   { to: '/admin/projects', icon: Folder, label: 'Projects' },
   { to: '/admin/muster-roll', icon: UploadCloud, label: 'Muster Roll' },
   { to: '/admin/attendance-generator', icon: UploadCloud, label: 'Timing Attendance' },
-  { to: '/admin/wage-slip-generator', icon: UploadCloud, label: 'PPGCL Wage Slip' },
+  { to: '/admin/wage-slip-generator', icon: UploadCloud, label: 'Wage Slip Generator' },
   { to: '/admin/payment-receipts', icon: UploadCloud, label: 'Payment Receipts' },
   { to: '/admin/salary/generate', icon: DollarSign, label: 'Salary Management' },
   { to: '/admin/employees', icon: Briefcase, label: 'Employee Master' },

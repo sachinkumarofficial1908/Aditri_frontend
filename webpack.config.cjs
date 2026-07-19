@@ -20,7 +20,7 @@ module.exports = {
     type: 'filesystem',
   },
   mode: isDevelopment ? 'development' : 'production',
-  devtool: isDevelopment ? 'eval-source-map' : 'source-map',
+  devtool: isDevelopment ? 'eval-source-map' : false,
   resolve: {
     extensions: ['.js', '.jsx'],
     alias: {

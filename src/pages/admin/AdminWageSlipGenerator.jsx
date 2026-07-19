@@ -11,8 +11,26 @@ const MONTHS = [
 
 const YEAR_OPTIONS = Array.from({ length: 12 }, (_, index) => 2024 + index);
 
+const SLIP_FORMATS = {
+  normal: {
+    label: 'Normal Salary Slip',
+    required:
+      'Company Name, Name, Grade, Emp ID No., PF No/UAN No., ESIC No., Rate per Day/Basic Rate, Total Payable days/No. of days Worked',
+    optional:
+      'Date of Payment, Nature Of Work, Basic Salary, Bonus, Leave Bonus, Gross, PF @12%, ESIC @0.75%, Total Deductions, Net Payable Amount',
+  },
+  ppgcl: {
+    label: 'PPGCL Wage Slip',
+    required:
+      'Company Name, Name, S/O, Grade, Emp ID No., PF No, ESIC No., Bank A/C, Aadhar, Rate per Day, Total Payable days',
+    optional:
+      'Bonus, Leave Bonus, OT Amt, Other Allowance, Gross, PF @12%, ESIC @0.75%, Advance, Net Payable Amount',
+  },
+};
+
 export default function AdminWageSlipGenerator() {
   const [file, setFile] = useState(null);
+  const [slipFormat, setSlipFormat] = useState('normal');
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
   const [loading, setLoading] = useState(false);
@@ -76,6 +94,7 @@ export default function AdminWageSlipGenerator() {
     try {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('slipFormat', slipFormat);
 
       const response = await wageSlipAPI.validate(formData);
       const { missingHeaders: missing, foundHeaders: found } = response.data;
@@ -125,6 +144,7 @@ export default function AdminWageSlipGenerator() {
       formData.append('file', file);
       formData.append('month', month);
       formData.append('year', year);
+      formData.append('slipFormat', slipFormat);
       if (confirmMissing) {
         formData.append('continueOnMissing', 'true');
         formData.append('allowMissingHeaders', 'true');
@@ -132,7 +152,8 @@ export default function AdminWageSlipGenerator() {
 
       const response = await wageSlipAPI.generate(formData);
       const blob = new Blob([response.data], { type: response.headers['content-type'] });
-      const fileName = response.headers['content-disposition']?.split('filename=')[1]?.replace(/"/g, '') || `wage-slips-${month}-${year}.xlsx`;
+      const fallbackName = slipFormat === 'normal' ? `normal-salary-slips-${month}-${year}.xlsx` : `wage-slips-${month}-${year}.xlsx`;
+      const fileName = response.headers['content-disposition']?.split('filename=')[1]?.replace(/"/g, '') || fallbackName;
       saveDownload(blob, fileName);
 
       setGeneratedCount(Number(response.headers['x-wageslip-generated'] || 0));
@@ -171,7 +192,7 @@ export default function AdminWageSlipGenerator() {
             <div>
               <h1 className="text-2xl font-display font-bold text-gray-900">Wage Slip Generator</h1>
               <p className="text-sm text-gray-600 mt-2">
-                Upload a worker wage data file, choose the month and year, and generate formatted wage slips for each employee.
+                Upload worker salary data, choose the format, month, and year, then generate formatted slips for each employee.
               </p>
             </div>
             <Link to="/admin" className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 transition">
@@ -180,7 +201,23 @@ export default function AdminWageSlipGenerator() {
           </div>
 
           <div className="space-y-6 bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-6 lg:grid-cols-4">
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">Slip Format</span>
+                <select
+                  value={slipFormat}
+                  onChange={(event) => {
+                    setSlipFormat(event.target.value);
+                    resetState();
+                  }}
+                  className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm transition focus:border-primary-600 focus:outline-none"
+                >
+                  {Object.entries(SLIP_FORMATS).map(([value, config]) => (
+                    <option key={value} value={value}>{config.label}</option>
+                  ))}
+                </select>
+              </label>
+
               <label className="block">
                 <span className="text-sm font-medium text-gray-700">Month</span>
                 <select
@@ -229,9 +266,9 @@ export default function AdminWageSlipGenerator() {
               <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold">Required Headers:</p>
-                <p className="mt-1">Company Name, Name, S/O, Grade, Emp ID No., PF No, ESIC No., Bank A/C, Aadhar, Rate per Day, Total Payable days</p>
+                <p className="mt-1">{SLIP_FORMATS[slipFormat].required}</p>
                 <p className="mt-2 font-semibold">Optional Headers:</p>
-                <p>Bonus, Leave Bonus, OT Amt, Other Allowance, Gross, PF @12%, ESIC @0.75%, Advance, Net Payable Amount</p>
+                <p>{SLIP_FORMATS[slipFormat].optional}</p>
               </div>
             </div>
 

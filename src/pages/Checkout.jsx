@@ -117,7 +117,11 @@ export function Checkout() {
       setVerifiedPhone('');
       setPhoneVerificationToken('');
       setValue('otp', '');
-      toast.success(result.type === 'test' ? `Testing OTP: ${result.data.devOtp}` : `OTP sent to +91 ${deliveryPhone}`);
+      toast.success(
+        result.type === 'test' && result.data.devOtp
+          ? `Testing OTP: ${result.data.devOtp}`
+          : `OTP sent to +91 ${deliveryPhone}`
+      );
     },
     onError: (err) => {
       recaptchaVerifierRef.current?.clear?.();

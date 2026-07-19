@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { Plus, Trash2, CheckCircle, UserCheck, XCircle, ArrowLeft, Upload, X, Download, FileSpreadsheet, MoreHorizontal } from 'lucide-react';
-import * as XLSX from 'xlsx';
 import { employeeAPI, getErrorMessage } from '../../utils/api';
 import { resolveImageUrl } from '../../utils/imageUrl';
 import { validations, formatField, validateField, formatBackendErrors } from '../../utils/validations';
@@ -101,6 +100,30 @@ const defaultExportFieldKeys = [
   'clmsId',
   'supervisor_id',
 ];
+
+const escapeCsvValue = (value) => {
+  const text = String(value ?? '');
+  if (/[",\r\n]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+};
+
+const downloadCsv = (headers, rows, fileName) => {
+  const csv = [
+    headers.map(escapeCsvValue).join(','),
+    ...rows.map((row) => headers.map((header) => escapeCsvValue(row[header])).join(',')),
+  ].join('\r\n');
+  const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
 
 const getSupervisorId = (supervisor) => {
   if (!supervisor) return '';
@@ -243,14 +266,8 @@ export default function AdminEmployees() {
         return row;
       }, {}));
 
-      const worksheet = XLSX.utils.json_to_sheet(rows);
-      worksheet['!cols'] = fields.map((field) => ({
-        wch: Math.max(field.label.length + 4, 18),
-      }));
-
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
-      XLSX.writeFile(workbook, `employees-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      const headers = fields.map((field) => field.label);
+      downloadCsv(headers, rows, `employees-${new Date().toISOString().slice(0, 10)}.csv`);
       toast.success(`Exported ${exportEmployees.length} employees`);
     } catch (error) {
       toast.error(getErrorMessage(error) || 'Failed to export employees');
@@ -793,7 +810,7 @@ export default function AdminEmployees() {
                     <FileSpreadsheet size={18} />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900">Excel Export</h3>
+                    <h3 className="text-sm font-semibold text-gray-900">CSV Export</h3>
                     <p className="text-xs text-gray-600">Choose the headers you want, then export the filtered employees.</p>
                   </div>
                 </div>
@@ -826,7 +843,7 @@ export default function AdminEmployees() {
                     className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                   >
                     <Download size={15} />
-                    {isExporting ? 'Exporting...' : 'Export Excel'}
+                    {isExporting ? 'Exporting...' : 'Export CSV'}
                   </button>
                 </div>
               </div>
